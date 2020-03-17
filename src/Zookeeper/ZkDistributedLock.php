@@ -17,7 +17,7 @@ class ZkDistributedLock
         //'zkPassword'   => '', //zookeeper 账号密码
         'zkTimeout'      => 5, //zookeeper 接收超时时间
     );
-    public function __construct($conf, $root = "/locks/"){
+    public function __construct($conf, $root = "/locks"){
 
         if (!empty($conf)){
             $this->options = array_merge($this->options,$conf);

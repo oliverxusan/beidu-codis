@@ -22,7 +22,7 @@ class zkLock implements LockInterface
     {
         if (empty($this->_instance)){
             //默认读tp中yaconf配置文件
-            $this->_instance = new ZkDistributedLock($config,"/locks/");
+            $this->_instance = new ZkDistributedLock($config,"/locks");
         }
     }
 
