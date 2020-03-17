@@ -1,10 +1,6 @@
 <?php
 namespace Ybren\Codis;
 
-
-use Ybren\Codis\Exception\CodisException;
-use Ybren\Codis\Zookeeper\RedisFromZk;
-
 /**
  * 分布式缓存 当NOSQL使用
  * Class Codis
