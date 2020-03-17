@@ -101,7 +101,7 @@ class Codis implements CmdInterface
      */
     public function has($name)
     {
-        return static::$handler->get($this->getCacheKey($name)) ? true : false;
+        return static::$handler->get(static::getCacheKey($name)) ? true : false;
     }
 
     /**
@@ -110,7 +110,7 @@ class Codis implements CmdInterface
      * @return mixed
      */
     public function getUnChange($name){
-        return static::$handler->get($this->getCacheKey($name));
+        return static::$handler->get(static::getCacheKey($name));
     }
 
     /**
@@ -124,7 +124,7 @@ class Codis implements CmdInterface
         if (is_null($expire)) {
             $expire = static::$options['expire'];
         }
-        $key = $this->getCacheKey($name);
+        $key = static::getCacheKey($name);
         if (is_int($expire) && $expire) {
             $result = static::$handler->setex($key, $expire, $value);
         } else {
@@ -142,7 +142,7 @@ class Codis implements CmdInterface
      */
     public function get($name, $default = false)
     {
-        $value = static::$handler->get($this->getCacheKey($name));
+        $value = static::$handler->get(static::getCacheKey($name));
         if (is_null($value) || false === $value) {
             return $default;
         }
@@ -164,7 +164,7 @@ class Codis implements CmdInterface
         if (is_null($expire) || empty($expire)) {
             $expire = static::$options['expire'];
         }
-        $key = $this->getCacheKey($name);
+        $key = static::getCacheKey($name);
         //对数组/对象数据进行缓存处理，保证数据完整性  byron sampson<xiaobo.sun@qq.com>
         $value = (is_object($value) || is_array($value)) ? json_encode($value) : $value;
         if (is_int($expire) && $expire) {
@@ -184,7 +184,7 @@ class Codis implements CmdInterface
      */
     public function inc($name, $step = 1)
     {
-        $key = $this->getCacheKey($name);
+        $key = static::getCacheKey($name);
         return static::$handler->incrby($key, $step);
     }
 
@@ -197,7 +197,7 @@ class Codis implements CmdInterface
      */
     public function dec($name, $step = 1)
     {
-        $key = $this->getCacheKey($name);
+        $key = static::getCacheKey($name);
         return static::$handler->decrby($key, $step);
     }
 
@@ -209,7 +209,7 @@ class Codis implements CmdInterface
      */
     public function rm($name)
     {
-        return static::$handler->delete($this->getCacheKey($name));
+        return static::$handler->delete(static::getCacheKey($name));
     }
 
     /**
@@ -229,42 +229,42 @@ class Codis implements CmdInterface
      * @param string $name 缓存名
      * @return string
      */
-    public function getCacheKey($name)
+    public static function getCacheKey($name)
     {
         return static::$prefix . $name;
     }
 
     public function lPop($key){
-        return static::$handler->lPop($this->getCacheKey($key));
+        return static::$handler->lPop(static::getCacheKey($key));
     }
 
     public function incr($key){
-        return static::$handler->incr($this->getCacheKey($key));
+        return static::$handler->incr(static::getCacheKey($key));
     }
 
     public function decr($key){
-        return static::$handler->decr($this->getCacheKey($key));
+        return static::$handler->decr(static::getCacheKey($key));
     }
 
     public function rPush($key , $val){
-        return static::$handler->rPush($this->getCacheKey($key) , $val);
+        return static::$handler->rPush(static::getCacheKey($key) , $val);
     }
 
     public function hGet($key , $k1){
-        return static::$handler->hGet($this->getCacheKey($key) , $k1);
+        return static::$handler->hGet(static::getCacheKey($key) , $k1);
     }
 
     public function hSet($key , $k1 , $v1){
-        return static::$handler->hSet($this->getCacheKey($key) , $k1 , $v1);
+        return static::$handler->hSet(static::getCacheKey($key) , $k1 , $v1);
     }
 
     public function hGetAll($key){
 
-        return static::$handler->hGetAll($this->getCacheKey($key));
+        return static::$handler->hGetAll(static::getCacheKey($key));
     }
 
     public function hDel($key , $k1){
-        return static::$handler->hDel($this->getCacheKey($key) , $k1);
+        return static::$handler->hDel(static::getCacheKey($key) , $k1);
     }
 
     public function setNx($key , $expire = 300 , $value = 1){
@@ -277,7 +277,7 @@ class Codis implements CmdInterface
     }
 
     public function expire($key , $expire = 3600){
-        $cacheKey = $this->getCacheKey($key);
+        $cacheKey = static::getCacheKey($key);
         return static::$handler->expire($cacheKey, $expire);
     }
 
