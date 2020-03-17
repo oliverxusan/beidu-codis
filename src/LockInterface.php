@@ -9,14 +9,18 @@ interface LockInterface
     /**
      * 获得分布式锁
      * @param $key
-     * @param $value
+     * @param $clientId
+     * @param $ttl
      * @return bool
      */
-    public static function acquireLock($key, $value);
+    public function acquireLock($key, $clientId, $ttl);
 
     /**
      * 释放分布式锁
+     * @param $key
+     * @param $clientId
      * @return mixed
      */
-    public static function releaseLock();
+    public function releaseLock($key, $clientId);
+
 }

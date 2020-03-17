@@ -7,53 +7,47 @@ use Ybren\Codis\Exception\LockException;
 
 class ZkDistributedLock
 {
-    protected static $zk;
-    protected static $myNode;
-    protected static $isNotified;
-    protected static $root;
+    protected $zk;
+    protected $myNode;
+    protected $isNotified;
+    protected $root;
 
-    private static $options = array(
+    private $options = array(
         'zkHost'       => '127.0.0.1:2181',//集群地址
         //'zkPassword'   => '', //zookeeper 账号密码
         'zkTimeout'      => 5, //zookeeper 接收超时时间
     );
-    public static function getZkInstance($conf, $root = "/locks/"){
-
-        if(isset(self::$zk)){
-            return self::$zk;
-        }
+    public function __construct($conf, $root = "/locks/"){
 
         if (!empty($conf)){
-            static::$options = array_merge(static::$options,$conf);
+            $this->options = array_merge($this->options,$conf);
         }else{
             if(!class_exists("\\think\\Config")){
                 throw new LockException("So Far. Only Adapter one for Thinkphp when get config file.");
             }
-            static::$options = array_merge(static::$options,\think\Config::iniGet('codisConnect'));
+            $this->options = array_merge($this->options,\think\Config::iniGet('codisConnect'));
         }
         if (!class_exists("Zookeeper")){
             throw new LockException("Zookeeper extend is uninstall.");
         }
-        $zk = new \Zookeeper(static::$options['zkHost'],function (){},static::$options['zkTimeout']);
+        $zk = new \Zookeeper($this->options['zkHost']);
         if(!$zk){
             throw new \Exception('connect zookeeper error');
         }
 
-        self::$zk = $zk;
-        self::$root = $root;
-
-        return $zk;
+        $this->zk = $zk;
+        $this->root = $root;
     }
 
     // 获取锁
-    public static function tryGetDistributedLock($lockKey, $value){
+    public function tryGetDistributedLock($lockKey, $value){
         try{
             // 创建根节点
-            self::createRootPath($value);
+            $this->createRootPath($value);
             // 创建临时顺序节点
-            self::createSubPath(self::$root . $lockKey, $value);
+            $this->createSubPath($this->root . $lockKey, $value);
             // 获取锁
-            return self::getLock();
+            return $this->getLock();
 
         } catch (\Exception $e){
             return false;
@@ -61,15 +55,15 @@ class ZkDistributedLock
     }
 
     // 释放锁
-    public static function releaseDistributedLock(){
-        if(self::$zk->delete(self::$myNode)){
+    public function releaseDistributedLock(){
+        if($this->zk->delete($this->myNode)){
             return true;
         }else{
             return false;
         }
     }
 
-    public static function createRootPath($value){
+    public function createRootPath($value){
         $aclArray = [
             [
                 'perms'  => \Zookeeper::PERM_ALL,
@@ -78,18 +72,18 @@ class ZkDistributedLock
             ]
         ];
         // 判断根节点是否存在
-        if(false == self::$zk->exists(self::$root)){
+        if(false == $this->zk->exists($this->root)){
             // 创建根节点
-            $result = self::$zk->create(self::$root, $value, $aclArray);
+            $result = $this->zk->create($this->root, $value, $aclArray);
             if(false == $result){
-                throw new \Exception('create '.self::$root.' fail');
+                throw new \Exception('create '.$this->root.' fail');
             }
         }
 
         return true;
     }
 
-    public static function createSubPath($path, $value){
+    public function createSubPath($path, $value){
         // 全部权限
         $aclArray = [
             [
@@ -105,8 +99,8 @@ class ZkDistributedLock
          * Zookeeper::SEQUENCE顺序，
          * Zookeeper::EPHEMERAL | Zookeeper::SEQUENCE 临时顺序
          */
-        self::$myNode = self::$zk->create($path, $value, $aclArray, \Zookeeper::EPHEMERAL | \Zookeeper::SEQUENCE);
-        if(false == self::$myNode){
+        $this->myNode = $this->zk->create($path, $value, $aclArray, \Zookeeper::EPHEMERAL | \Zookeeper::SEQUENCE);
+        if(false == $this->myNode){
             throw new \Exception('create -s -e '.$path.' fail');
         }
         return true;
@@ -114,26 +108,25 @@ class ZkDistributedLock
 
     public function getLock(){
         // 获取子节点列表从小到大，显然不可能为空，至少有一个节点
-        $res = self::checkMyNodeOrBefore();
+        $res = $this->checkMyNodeOrBefore();
         if($res === true){
             return true;
         }else{
-            self::$isNotifyed = false;// 初始化状态值
+            $this->isNotified = false;// 初始化状态值
             // 考虑监听失败的情况：当我正要监听before之前，它被清除了，监听失败返回 false
-            $result = self::$zk->get($res, [ZkDistributedLock::class, 'watcher']);
+            $result = $this->zk->get($res, [ZkDistributedLock::class, 'watcher']);
             while(!$result){
-                $res1 = self::checkMyNodeOrBefore();
+                $res1 = $this->checkMyNodeOrBefore();
                 if($res1 === true){
                     return true;
                 }else{
-                    $result = self::$zk->get($res1, [ZkDistributedLock::class, 'watcher']);
+                    $result = $this->zk->get($res1, [ZkDistributedLock::class, 'watcher']);
                 }
             }
 
             // 阻塞，等待watcher被执行，watcher执行完回到这里
-            while(!self::$isNotified){
-                echo '.';
-                usleep(500000); // 500ms
+            while(!$this->isNotified){
+                usleep(100000); // 100ms
             }
 
             return true;
@@ -146,28 +139,25 @@ class ZkDistributedLock
      * @param $state
      * @param $key 监听的path
      */
-    public static function watcher($type, $state, $key){
-        echo PHP_EOL.$key.' notified ....'.PHP_EOL;
-        self::$isNotified = true;
-        self::getLock();
+    public function watcher($type, $state, $key){
+        $this->isNotified = true;
+        $this->getLock();
     }
 
-    public static function checkMyNodeOrBefore(){
-        $list = self::$zk->getChildren(self::$root);
+    public function checkMyNodeOrBefore(){
+        $list = $this->zk->getChildren($this->root);
         sort($list);
         $root = self::$root;
         array_walk($list, function(&$val) use ($root){
             $val = $root . '/' . $val;
         });
 
-        if($list[0] == self::$myNode){
-            echo 'get lock node '.self::$myNode.'....'.PHP_EOL;
+        if($list[0] == $this->myNode){
             return true;
         }else{
             // 找到上一个节点
-            $index = array_search(self::$myNode, $list);
+            $index = array_search($this->myNode, $list);
             $before = $list[$index - 1];
-            echo 'before node '.$before.'.........'.PHP_EOL;
             return $before;
         }
     }
