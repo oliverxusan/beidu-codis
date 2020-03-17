@@ -39,8 +39,13 @@ class Codis implements CmdInterface
             throw new CodisException('not support: redis');
         }
 
-        if(!empty($options)){
+        if (!empty($options)){
             static::$options = array_merge(static::$options, $options);
+        }else{
+            if(!class_exists("\\think\\Config")){
+                throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
+            }
+            static::$options = array_merge(static::$options,\think\Config::iniGet('codisConnect'));
         }
 
         static::$handler = RedisFromZk::connection(static::$options);
@@ -66,6 +71,11 @@ class Codis implements CmdInterface
         }
         if(!empty($options)){
             static::$options = array_merge(static::$options, $options);
+        }else{
+            if(!class_exists("\\think\\Config")){
+                throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
+            }
+            static::$options = array_merge(static::$options,\think\Config::iniGet('codisConnect'));
         }
 
         static::$handler = RedisFromZk::connection(static::$options);

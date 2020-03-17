@@ -15,20 +15,26 @@ class ZkDistributedLock
     private static $options = array(
         'zkHost'       => '127.0.0.1:2181',//集群地址
         //'zkPassword'   => '', //zookeeper 账号密码
-        'timeout'      => 5, //zookeeper 接收超时时间
+        'zkTimeout'      => 5, //zookeeper 接收超时时间
     );
     public static function getZkInstance($conf, $root = "/locks/"){
 
         if(isset(self::$zk)){
             return self::$zk;
         }
+
         if (!empty($conf)){
             static::$options = array_merge(static::$options,$conf);
+        }else{
+            if(!class_exists("\\think\\Config")){
+                throw new LockException("So Far. Only Adapter one for Thinkphp when get config file.");
+            }
+            static::$options = array_merge(static::$options,\think\Config::iniGet('codisConnect'));
         }
         if (!class_exists("Zookeeper")){
             throw new LockException("Zookeeper extend is uninstall.");
         }
-        $zk = new \Zookeeper(static::$options['zkHost'],function (){},static::$options['timeout']);
+        $zk = new \Zookeeper(static::$options['zkHost'],function (){},static::$options['zkTimeout']);
         if(!$zk){
             throw new \Exception('connect zookeeper error');
         }

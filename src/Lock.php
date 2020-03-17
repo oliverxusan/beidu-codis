@@ -2,6 +2,7 @@
 namespace Ybren\Codis;
 
 
+use Ybren\Codis\Exception\LockException;
 use Ybren\Codis\Zookeeper\ZkDistributedLock;
 
 /**
@@ -33,11 +34,12 @@ class Lock implements LockInterface
 
     /**
      * 获得zk链接句柄
+     * @param string $config
      * @return object
      * @throws \Exception
      */
-    private static function connect(){
-        return ZkDistributedLock::getZkInstance();
+    private static function connect($config = array()){
+        return ZkDistributedLock::getZkInstance($config);
     }
 
     // 调用静态方法
