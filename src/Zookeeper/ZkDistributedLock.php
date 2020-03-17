@@ -40,11 +40,11 @@ class ZkDistributedLock
     }
 
     // 获取锁
-    public function tryGetDistributedLock($lockKey, $value){
+    public function tryGetDistributedLock($key, $value){
         // 创建根节点
         $this->createRootPath($value);
         // 创建临时顺序节点
-        $this->createSubPath($this->root . $lockKey, $value);
+        $this->createSubPath($this->root .'/'. $key, $value);
         // 获取锁
         return $this->getLock();
     }
@@ -109,19 +109,19 @@ class ZkDistributedLock
         }else{
             $this->isNotified = false;// 初始化状态值
             // 考虑监听失败的情况：当我正要监听before之前，它被清除了，监听失败返回 false
-            $result = $this->zk->get($res, [ZkDistributedLock::class, 'watcher']);
+            $result = $this->zk->get($res, [\Ybren\Codis\Zookeeper\ZkDistributedLock::class, 'watcher']);
             while(!$result){
                 $res1 = $this->checkMyNodeOrBefore();
                 if($res1 === true){
                     return true;
                 }else{
-                    $result = $this->zk->get($res1, [ZkDistributedLock::class, 'watcher']);
+                    $result = $this->zk->get($res1, [\Ybren\Codis\Zookeeper\ZkDistributedLock::class, 'watcher']);
                 }
             }
 
             // 阻塞，等待watcher被执行，watcher执行完回到这里
             while(!$this->isNotified){
-                usleep(300000); // 300ms
+                usleep(100000); // 100ms
             }
 
             return true;
@@ -142,7 +142,7 @@ class ZkDistributedLock
     public function checkMyNodeOrBefore(){
         $list = $this->zk->getChildren($this->root);
         sort($list);
-        $root = self::$root;
+        $root = $this->root;
         array_walk($list, function(&$val) use ($root){
             $val = $root . '/' . $val;
         });
