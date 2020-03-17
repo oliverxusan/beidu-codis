@@ -72,7 +72,7 @@ class ZkDistributedLock
     public static function createRootPath($value){
         $aclArray = [
             [
-                'perms'  => Zookeeper::PERM_ALL,
+                'perms'  => \Zookeeper::PERM_ALL,
                 'scheme' => 'world',
                 'id'     => 'anyone',
             ]
@@ -93,7 +93,7 @@ class ZkDistributedLock
         // 全部权限
         $aclArray = [
             [
-                'perms'  => Zookeeper::PERM_ALL,
+                'perms'  => \Zookeeper::PERM_ALL,
                 'scheme' => 'world',
                 'id'     => 'anyone',
             ]
@@ -105,7 +105,7 @@ class ZkDistributedLock
          * Zookeeper::SEQUENCE顺序，
          * Zookeeper::EPHEMERAL | Zookeeper::SEQUENCE 临时顺序
          */
-        self::$myNode = self::$zk->create($path, $value, $aclArray, Zookeeper::EPHEMERAL | Zookeeper::SEQUENCE);
+        self::$myNode = self::$zk->create($path, $value, $aclArray, \Zookeeper::EPHEMERAL | \Zookeeper::SEQUENCE);
         if(false == self::$myNode){
             throw new \Exception('create -s -e '.$path.' fail');
         }
@@ -120,7 +120,7 @@ class ZkDistributedLock
         }else{
             self::$isNotifyed = false;// 初始化状态值
             // 考虑监听失败的情况：当我正要监听before之前，它被清除了，监听失败返回 false
-            $result = self::$zk->get($res, [\think\zookeeper\ZkDistributedLock::class, 'watcher']);
+            $result = self::$zk->get($res, [ZkDistributedLock::class, 'watcher']);
             while(!$result){
                 $res1 = self::checkMyNodeOrBefore();
                 if($res1 === true){
