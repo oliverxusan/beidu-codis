@@ -49,14 +49,14 @@ class Cmd implements CmdInterface
         $this->handler = RedisFromZk::connection($this->options);
 
         if ($this->options['prefix']) {
-            $this->prefix = $options['prefix'];
+            $this->prefix = $this->options['prefix'];
         }
 
-        if ('' != $options['password']) {
-            $this->handler->auth($options['password']);
+        if ($this->options['password']) {
+            $this->handler->auth($this->options['password']);
         }
-        if (isset($options['select']) && 0 != $options['select']) {
-            $this->handler->select($options['select']);
+        if ($this->options['select'] && $this->options['select'] > 0) {
+            $this->handler->select($this->options['select']);
         }
     }
     /**
