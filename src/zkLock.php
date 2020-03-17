@@ -35,7 +35,7 @@ class zkLock implements LockInterface
      */
     public function acquireLock($key, $clientId, $ttl = -1)
     {
-        $this->_instance->tryGetDistributedLock($key,$clientId);
+        return $this->_instance->tryGetDistributedLock($key,$clientId);
     }
 
     /**
@@ -46,6 +46,6 @@ class zkLock implements LockInterface
      */
     public function releaseLock($key = '', $clientId = '')
     {
-        $this->_instance->releaseDistributedLock();
+        return $this->_instance->releaseDistributedLock();
     }
 }
