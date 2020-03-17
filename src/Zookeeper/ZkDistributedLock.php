@@ -41,17 +41,12 @@ class ZkDistributedLock
 
     // 获取锁
     public function tryGetDistributedLock($lockKey, $value){
-        try{
-            // 创建根节点
-            $this->createRootPath($value);
-            // 创建临时顺序节点
-            $this->createSubPath($this->root . $lockKey, $value);
-            // 获取锁
-            return $this->getLock();
-
-        } catch (\Exception $e){
-            return false;
-        }
+        // 创建根节点
+        $this->createRootPath($value);
+        // 创建临时顺序节点
+        $this->createSubPath($this->root . $lockKey, $value);
+        // 获取锁
+        return $this->getLock();
     }
 
     // 释放锁
@@ -126,7 +121,7 @@ class ZkDistributedLock
 
             // 阻塞，等待watcher被执行，watcher执行完回到这里
             while(!$this->isNotified){
-                usleep(100000); // 100ms
+                usleep(300000); // 300ms
             }
 
             return true;
