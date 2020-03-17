@@ -221,11 +221,7 @@ class Codis implements CmdInterface
      */
     public function getCacheKey($name)
     {
-        if(strpos($name , static::$prefix) !== 0){
-            return static::$prefix . $name;
-        }else{
-            return $name;
-        }
+        return static::$prefix . $name;
     }
 
     public function lPop($key){
