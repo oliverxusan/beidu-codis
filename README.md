@@ -66,3 +66,88 @@ $zkLock->releaseLock();
 echo "zk end release lock\r\n";
 
 ````
+
+> Codis禁用命令如下
+
+|   Command Type   |   Command Name   |
+|:----------------:|:---------------- |
+|   Keys           | KEYS             |
+|                  | MIGRATE          |
+|                  | MOVE             |
+|                  | OBJECT           |
+|                  | RANDOMKEY        |
+|                  | RENAME           |
+|                  | RENAMENX         |
+|                  | SCAN             |
+|                  |                  |
+|   Strings        | BITOP            |
+|                  | MSETNX           |
+|                  |                  |
+|   Lists          | BLPOP            |
+|                  | BRPOP            |
+|                  | BRPOPLPUSH       |
+|                  |                  |
+|   Pub/Sub        | PSUBSCRIBE       |
+|                  | PUBLISH          |
+|                  | PUNSUBSCRIBE     |
+|                  | SUBSCRIBE        |
+|                  | UNSUBSCRIBE      |
+|                  |                  |
+|   Transactions   | DISCARD          |
+|                  | EXEC             |
+|                  | MULTI            |
+|                  | UNWATCH          |
+|                  | WATCH            |
+|                  |                  |
+|   Scripting      | SCRIPT           |
+|                  |                  |
+|   Server         | BGREWRITEAOF     |
+|                  | BGSAVE           |
+|                  | CLIENT           |
+|                  | CONFIG           |
+|                  | DBSIZE           |
+|                  | DEBUG            |
+|                  | FLUSHALL         |
+|                  | FLUSHDB          |
+|                  | LASTSAVE         |
+|                  | LATENCY          |
+|                  | MONITOR          |
+|                  | PSYNC            |
+|                  | REPLCONF         |
+|                  | RESTORE          |
+|                  | SAVE             |
+|                  | SHUTDOWN         |
+|                  | SLAVEOF          |
+|                  | SLOWLOG          |
+|                  | SYNC             |
+|                  | TIME             |
+|                  |                  |
+|   Codis Slot     | SLOTSCHECK       |
+|                  | SLOTSDEL         |
+|                  | SLOTSINFO        |
+|                  | SLOTSMGRTONE     |
+|                  | SLOTSMGRTSLOT    |
+|                  | SLOTSMGRTTAGONE  |
+|                  | SLOTSMGRTTAGSLOT |
+
+
+> 半支持命令
+
+|   Command Type   |   Command Name   |
+|:----------------:|:---------------- |
+|   Lists          | RPOPLPUSH        |
+|                  |                  |
+|   Sets           | SDIFF            |
+|                  | SINTER           |
+|                  | SINTERSTORE      |
+|                  | SMOVE            |
+|                  | SUNION           |
+|                  | SUNIONSTORE      |
+|                  |                  |
+|   Sorted Sets    | ZINTERSTORE      |
+|                  | ZUNIONSTORE      |
+|                  |                  |
+|   HyperLogLog    | PFMERGE          |
+|                  |                  |
+|   Scripting      | EVAL             |
+|                  | EVALSHA          |
