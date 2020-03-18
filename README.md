@@ -8,13 +8,13 @@ composer require beidu/codis
 
 *配置文件*
 ````
-codisConnect.zkHost = '172.16.24.2:2181,172.16.24.1:2181,172.16.24.3:2181'
-codisConnect.zkPassword = 'oliver:123456as'
-codisConnect.zkName = 'ybren-cache-middleware'
+codisConnect.zkHost = '127.0.0.1:2181'
+codisConnect.zkPassword = 'username:password'
+codisConnect.zkName = 'codis项目名称'
 codisConnect.zkTimeout = 5
 codisConnect.retryTime = 3
-codisConnect.password = '123456as'
-codisConnect.select = 0
+codisConnect.password = 'redis密码'
+codisConnect.select = 0 
 codisConnect.timeout = 3
 codisConnect.expire = 3600
 codisConnect.prefix = ''
