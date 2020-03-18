@@ -1,6 +1,11 @@
 # beidu-codis
 >呗嘟分布式redis扩展
 
+####composer 依赖安装
+````
+composer require beidu/codis
+````
+
 *配置文件*
 ````
 codisConnect.zkHost = '172.16.24.2:2181,172.16.24.1:2181,172.16.24.3:2181'
