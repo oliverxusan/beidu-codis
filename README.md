@@ -30,7 +30,7 @@ Codis::rm($key)
 Codis::setNx($key, $expire= 300, $value= 1)
 Codis::has($name)
 
-获取redis连接句柄可以操作没有的对象
+获取redis连接句柄可以操作没有的方法
 Codis::handler()
 
 list 操作命令
