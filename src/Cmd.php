@@ -8,6 +8,7 @@ use Ybren\Codis\Connection\Conn;
 use Ybren\Codis\Enum\BizEnum;
 use Ybren\Codis\Enum\ConnEnum;
 use Ybren\Codis\Exception\CodisException;
+use Ybren\Codis\Exception\ConnException;
 use Ybren\Codis\Zookeeper\RedisFromZk;
 
 class Cmd implements CmdInterface
@@ -28,13 +29,15 @@ class Cmd implements CmdInterface
     protected $handler;  // 当前操作句柄
 
     protected $prefix = '';
+
+    protected $conn = null;
     /**
-     * 架构函数
-     * @param array $options 缓存参数
+     * 构造函数
+     * @param ConnEnum $connType 连接类型
      * @return void
      * @throws \Exception
      */
-    public function __construct($options = array())
+    public function __construct($connType = null)
     {
         if (!extension_loaded('redis')) {
             throw new CodisException('not support: redis');
@@ -264,10 +267,19 @@ class Cmd implements CmdInterface
      * 切换连接类型
      * @param ConnEnum $type
      * @return mixed
+     * @throws ConnException
      */
     public function switchConnType($type)
     {
-        $conn = new Conn();
-        $conn->setConnType($type);
+        if ($this->conn == null){
+            throw new ConnException("please you make invocation \Ybren\Codis\Cmd::initConn() method.");
+        }
+        $this->conn->setConnType($type);
+    }
+
+    public function initConn(){
+        if ($this->conn == null){
+            $this->conn = new Conn();
+        }
     }
 }

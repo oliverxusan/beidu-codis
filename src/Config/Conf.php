@@ -74,11 +74,32 @@ class Conf
     private $expire;
 
     /**
+     * 连接类型
+     * @var $connType
+     */
+    private $connType;
+
+    /**
      * redis 前缀
      * @var $prefix
      */
     private $prefix;
 
+    /**
+     * @return mixed
+     */
+    public function getConnType()
+    {
+        return $this->connType;
+    }
+
+    /**
+     * @param mixed $connType
+     */
+    public function setConnType($connType)
+    {
+        $this->connType = $connType;
+    }
     /**
      * @return mixed
      */

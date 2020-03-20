@@ -1,6 +1,8 @@
 <?php
 namespace Ybren\Codis;
 
+use Ybren\Codis\Enum\ConnEnum;
+
 /**
  * 分布式缓存 当NOSQL使用
  * Class Codis
@@ -11,16 +13,16 @@ class Codis
     //cmd实例
     private static $_instance = null;
 
+    private static $_connType = null;
     private function __construct()
     {
     }
 
-    private static function connect($options = array()){
+    private static function init(){
         if (!empty(static::$_instance)){
             return static::$_instance;
         }
-
-        static::$_instance = new Cmd($options);
+        static::$_instance = new Cmd(static::$_connType);
         return static::$_instance;
     }
 
@@ -28,7 +30,7 @@ class Codis
     // 调用静态方法
     public static function __callStatic($method, $params){
 
-        return call_user_func_array(array(static::connect(), $method), $params);
+        return call_user_func_array(array(static::init(), $method), $params);
     }
 
     /**
@@ -39,8 +41,14 @@ class Codis
     public static function getInstance(CmdInterface $cmd)
     {
         if (static::$_instance == null){
-            static::connect();
+            static::init();
         }
         return static::$_instance;
+    }
+
+    public static function switchConnType($type){
+        if (!empty($type)){
+            static::$_connType = $type;
+        }
     }
 }

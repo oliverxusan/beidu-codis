@@ -24,7 +24,16 @@ interface ConnInterface
 
     /**
      * 获取连接句柄
+     * @param array $conf
+     * @param callable $func
      * @return mixed
      */
-    public function getSock();
+    public function getSock(array $conf,callable $func);
+
+    /**
+     * 初始化配置文件
+     * @param array $conf
+     * @return mixed
+     */
+    public function initConfigure(array $conf);
 }
