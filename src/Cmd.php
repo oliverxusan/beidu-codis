@@ -4,6 +4,7 @@
 namespace Ybren\Codis;
 
 
+use Ybren\Codis\Enum\BizEnum;
 use Ybren\Codis\Exception\CodisException;
 use Ybren\Codis\Zookeeper\RedisFromZk;
 
@@ -48,8 +49,10 @@ class Cmd implements CmdInterface
 
         $this->handler = RedisFromZk::connection($this->options);
 
-        if ($this->options['prefix']) {
+        if (empty($this->options['prefix'])) {
             $this->prefix = $this->options['prefix'];
+        }else{
+            $this->prefix = BizEnum::NORMAL;
         }
 
         if ($this->options['password']) {
@@ -164,7 +167,7 @@ class Cmd implements CmdInterface
      */
     public function rm($name)
     {
-        return $this->handler->delete(static::getCacheKey($name));
+        return $this->handler->del($this->getCacheKey($name));
     }
 
     /**
@@ -244,5 +247,14 @@ class Cmd implements CmdInterface
     public function expire($key , $expire = 3600){
         $cacheKey = $this->getCacheKey($key);
         return $this->handler->expire($cacheKey, $expire);
+    }
+
+    public function setPrefix($value){
+        $this->prefix = $value;
+    }
+
+    public function getPrefix()
+    {
+        return $this->prefix;
     }
 }
