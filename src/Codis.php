@@ -19,6 +19,7 @@ class Codis
         if (!empty(static::$_instance)){
             return static::$_instance;
         }
+
         static::$_instance = new Cmd($options);
         return static::$_instance;
     }
@@ -32,9 +33,10 @@ class Codis
 
     /**
      * 获取当前cmd对象实例
+     * @param CmdInterface $cmd
      * @return object
      */
-    public static function getInstance()
+    public static function getInstance(CmdInterface $cmd)
     {
         if (static::$_instance == null){
             static::connect();

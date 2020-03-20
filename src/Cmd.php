@@ -4,7 +4,9 @@
 namespace Ybren\Codis;
 
 
+use Ybren\Codis\Connection\Conn;
 use Ybren\Codis\Enum\BizEnum;
+use Ybren\Codis\Enum\ConnEnum;
 use Ybren\Codis\Exception\CodisException;
 use Ybren\Codis\Zookeeper\RedisFromZk;
 
@@ -256,5 +258,16 @@ class Cmd implements CmdInterface
     public function getPrefix()
     {
         return $this->prefix;
+    }
+
+    /**
+     * 切换连接类型
+     * @param ConnEnum $type
+     * @return mixed
+     */
+    public function switchConnType($type)
+    {
+        $conn = new Conn();
+        $conn->setConnType($type);
     }
 }

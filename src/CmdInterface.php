@@ -3,6 +3,8 @@
 
 namespace Ybren\Codis;
 
+use Ybren\Codis\Enum\ConnEnum;
+
 /**
  * 定义一些基本操作方法
  * Interface CmdInterface
@@ -62,4 +64,11 @@ interface CmdInterface
      * @return object
      */
     public function handler();
+
+    /**
+     * 切换连接类型
+     * @param ConnEnum $type
+     * @return mixed
+     */
+    public function switchConnType($type);
 }
