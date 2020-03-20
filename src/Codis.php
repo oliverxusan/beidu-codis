@@ -29,4 +29,16 @@ class Codis
 
         return call_user_func_array(array(static::connect(), $method), $params);
     }
+
+    /**
+     * 获取当前cmd对象实例
+     * @return object
+     */
+    public static function getInstance()
+    {
+        if (static::$_instance == null){
+            static::connect();
+        }
+        return static::$_instance;
+    }
 }
