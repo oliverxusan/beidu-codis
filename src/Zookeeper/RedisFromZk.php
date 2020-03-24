@@ -4,6 +4,7 @@
 namespace Ybren\Codis\Zookeeper;
 
 
+use Ybren\Codis\Config\Conf;
 use Ybren\Codis\Exception\CodisException;
 
 class RedisFromZk
@@ -14,24 +15,16 @@ class RedisFromZk
 
     private static $_codisInstance ;
 
-    private static $options = array(
-        'zkHost'       => '127.0.0.1:2181',//集群地址
-        'zkPassword'   => '', //zookeeper 账号密码
-        'zkName'       => '', //zookeeper项目名称
-        'retryTime'    => 3,
-        'timeout'      => 3, //redis连接超时时间
-    );
+    private static $timeout = 3;
 
     /**
-     * @param array $option
+     * @param Conf $conf
      * @return Object Redis
      * @throws CodisException
      */
-    public static function connection($option = array()){
-        if (!empty($option)){
-            static::$options = array_merge(static::$options,$option);
-        }
-        return static::getCodisInstance(static::$options['zkHost'], "/jodis/".static::$options['zkName'],static::$options['zkPassword'], static::$options['retryTime']);
+    public static function connection(Conf $conf){
+        static::$timeout = $conf->getTimeout();
+        return static::getCodisInstance($conf->getZkHost(), "/jodis/".$conf->getZkName(),$conf->getZkPassword(), $conf->getRetryTime());
     }
 
     /**
@@ -81,12 +74,12 @@ class RedisFromZk
                 $proxyNum++ ;
 
                 $addr = explode(':', $proxy) ;
-                $connector = $redis->connect($addr[0], $addr[1], static::$options['timeout']) ;
+                $connector = $redis->connect($addr[0], $addr[1], static::$timeout) ;
                 if(!$connector){
                     $i = 0 ;
                     //retry
                     while($i < $retryTime){
-                        $connector = $redis->connect($addr[0], $addr[1], static::$options['timeout']);
+                        $connector = $redis->connect($addr[0], $addr[1], static::$timeout);
                         if (!empty($redisPassword)){
                             $redis->auth($redisPassword);
                         }

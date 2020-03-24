@@ -12,8 +12,9 @@ class TestConnection
 {
     public function testConn(){
         $conn = new Conn();
-        $conn->getSock(function ($connType,Conf $c){
-            return RedisFromZk::connection($conf);
+        $config= [];
+        $conn->getSock($config,function (Conf $c){
+            return RedisFromZk::connection($c);
         });
     }
 }

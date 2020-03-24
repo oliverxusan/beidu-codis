@@ -23,17 +23,30 @@ interface ConnInterface
     public function getConnType();
 
     /**
-     * 获取连接句柄
+     * 通过匿名函数获取连接句柄
      * @param array $conf
-     * @param callable $func
+     * @param callable $callback
      * @return mixed
      */
-    public function getSock(array $conf,callable $func);
+    public function getSock($conf, $callback);
+
+    /**
+     * 通过分配的连接方式获取句柄
+     * @param $conf
+     * @return mixed
+     */
+    public function getAssignSock();
 
     /**
      * 初始化配置文件
      * @param array $conf
      * @return mixed
      */
-    public function initConfigure(array $conf);
+    public function initConfigure($conf);
+
+    /**
+     * 获取config对象
+     * @return mixed
+     */
+    public function getConfObj();
 }

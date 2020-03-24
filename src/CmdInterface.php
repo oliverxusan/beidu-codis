@@ -65,10 +65,4 @@ interface CmdInterface
      */
     public function handler();
 
-    /**
-     * 切换连接类型
-     * @param ConnEnum $type
-     * @return mixed
-     */
-    public function switchConnType($type);
 }

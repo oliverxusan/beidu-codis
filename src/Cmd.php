@@ -14,23 +14,16 @@ use Ybren\Codis\Zookeeper\RedisFromZk;
 class Cmd implements CmdInterface
 {
 
-    protected $options = array(
-        'zkHost'       => '127.0.0.1:2181',//集群地址
-        'zkPassword'   => '', //zookeeper 账号密码
-        'zkName'       => '', //zookeeper项目名称
-        'retryTime'    => 3, // zookeeper 重试次数
-        'password'     => '',
-        'select'       => 0,
-        'timeout'      => 3,
-        'expire'       => 3600,
-        'prefix'       => ''
-    );
-
     protected $handler;  // 当前操作句柄
 
     protected $prefix = '';
 
-    protected $conn = null;
+    /**
+     * 全局有效时间
+     * @var int
+     */
+    protected $expire = 3600;
+
     /**
      * 构造函数
      * @param ConnEnum $connType 连接类型
@@ -39,32 +32,27 @@ class Cmd implements CmdInterface
      */
     public function __construct($connType = null)
     {
-        if (!extension_loaded('redis')) {
-            throw new CodisException('not support: redis');
+
+        if(!class_exists("\\think\\Config")){
+            throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
         }
-
-        if (!empty($options)){
-            $this->options = array_merge($this->options, $options);
-        }else{
-            if(!class_exists("\\think\\Config")){
-                throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
-            }
-            $this->options = array_merge($this->options,\think\Config::iniGet('codisConnect'));
+        $config = \think\Config::iniGet('codisConnect');
+        $conn = new Conn($config);
+        //切换连接类型
+        if (!empty($connType)){
+            $conn->setConnType($connType);
         }
-
-        $this->handler = RedisFromZk::connection($this->options);
-
-        if (empty($this->options['prefix'])) {
-            $this->prefix = $this->options['prefix'];
-        }else{
+        //获取连接句柄
+        $this->handler = $conn->getAssignSock();
+        //获取配置对象类
+        $confObj = $conn->getConfObj();
+        if (empty($confObj->getPrefix())) {
             $this->prefix = BizEnum::NORMAL;
+        }else{
+            $this->prefix = $confObj->getPrefix();
         }
-
-        if ($this->options['password']) {
-            $this->handler->auth($this->options['password']);
-        }
-        if ($this->options['select'] && $this->options['select'] > 0) {
-            $this->handler->select($this->options['select']);
+        if (!empty($confObj->getExpire())){
+            $this->expire = $confObj->getExpire();
         }
     }
     /**
@@ -85,7 +73,7 @@ class Cmd implements CmdInterface
      */
     public function setUnChange($name , $value , $expire = null){
         if (is_null($expire)) {
-            $expire = $this->options['expire'];
+            $expire = $this->expire;
         }
         $key = $this->getCacheKey($name);
         if (is_int($expire) && $expire) {
@@ -125,7 +113,7 @@ class Cmd implements CmdInterface
     public function set($name, $value, $expire = null)
     {
         if (is_null($expire) || empty($expire)) {
-            $expire = $this->options['expire'];
+            $expire = $this->expire;
         }
         $key = $this->getCacheKey($name);
         //对数组/对象数据进行缓存处理，保证数据完整性  byron sampson<xiaobo.sun@qq.com>
@@ -255,6 +243,7 @@ class Cmd implements CmdInterface
     }
 
     public function setPrefix($value){
+
         $this->prefix = $value;
     }
 
@@ -263,23 +252,4 @@ class Cmd implements CmdInterface
         return $this->prefix;
     }
 
-    /**
-     * 切换连接类型
-     * @param ConnEnum $type
-     * @return mixed
-     * @throws ConnException
-     */
-    public function switchConnType($type)
-    {
-        if ($this->conn == null){
-            throw new ConnException("please you make invocation \Ybren\Codis\Cmd::initConn() method.");
-        }
-        $this->conn->setConnType($type);
-    }
-
-    public function initConn(){
-        if ($this->conn == null){
-            $this->conn = new Conn();
-        }
-    }
 }

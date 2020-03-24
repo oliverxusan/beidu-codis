@@ -45,10 +45,25 @@ class Conf
     private $retryTime;
 
     /**
-     * redis 域名+端口
-     * @var $host
+     * redis 本地域名+端口
+     * @var $localHost
      */
-    private $host;
+    private $localHost;
+    /**
+     * redis 本地密码
+     * @var $localPwd
+     */
+    private $localPwd;
+    /**
+     * redis 阿里域名+端口密码
+     * @var $aliHost
+     */
+    private $aliHost;
+    /**
+     * redis 阿里密码
+     * @var $aliPwd
+     */
+    private $aliPwd;
     /**
      * redis密码
      * @var $password
@@ -108,13 +123,6 @@ class Conf
         return $this->expire;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getHost()
-    {
-        return $this->host;
-    }
 
     /**
      * @return mixed
@@ -189,17 +197,6 @@ class Conf
     }
 
     /**
-     * @param mixed $host
-     */
-    public function setHost($host)
-    {
-        if (!is_array($host)){
-            $host = [$host];
-        }
-        $this->host = $host;
-    }
-
-    /**
      * @param mixed $password
      */
     public function setPassword($password)
@@ -263,4 +260,67 @@ class Conf
         $this->zkPassword = $zkPassword;
     }
 
+    /**
+     * @param mixed $aliHost
+     */
+    public function setAliHost($aliHost)
+    {
+        $this->aliHost = $aliHost;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAliHost()
+    {
+        return $this->aliHost;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAliPwd()
+    {
+        return $this->aliPwd;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLocalHost()
+    {
+        return $this->localHost;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLocalPwd()
+    {
+        return $this->localPwd;
+    }
+
+    /**
+     * @param mixed $aliPwd
+     */
+    public function setAliPwd($aliPwd)
+    {
+        $this->aliPwd = $aliPwd;
+    }
+
+    /**
+     * @param mixed $localHost
+     */
+    public function setLocalHost($localHost)
+    {
+        $this->localHost = $localHost;
+    }
+
+    /**
+     * @param mixed $localPwd
+     */
+    public function setLocalPwd($localPwd)
+    {
+        $this->localPwd = $localPwd;
+    }
 }

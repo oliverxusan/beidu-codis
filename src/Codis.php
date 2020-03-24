@@ -1,7 +1,6 @@
 <?php
 namespace Ybren\Codis;
 
-use Ybren\Codis\Enum\ConnEnum;
 
 /**
  * 分布式缓存 当NOSQL使用
@@ -14,6 +13,11 @@ class Codis
     private static $_instance = null;
 
     private static $_connType = null;
+
+    /**
+     * 不允许new 实例出来
+     * Codis constructor.
+     */
     private function __construct()
     {
     }

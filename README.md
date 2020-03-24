@@ -156,3 +156,23 @@ echo "zk end release lock\r\n";
 |                  |                  |
 |   Scripting      | EVAL             |
 |                  | EVALSHA          |
+
+## V2.0版本增加了本地 阿里云 codis 三种缓存连接句柄
+*配置文件*
+````
+codisConnect.zkHost = '127.0.0.1:2181'
+codisConnect.zkPassword = 'username:password'
+codisConnect.zkName = 'codis项目名称'
+codisConnect.zkTimeout = 5
+codisConnect.retryTime = 3
+codisConnect.password = 'redis密码'
+codisConnect.select = 0 
+codisConnect.timeout = 3
+codisConnect.expire = 3600
+codisConnect.prefix = ''
+codisConnect.aliHost = '127.0.0.1:6379'
+codisConnect.aliPwd = ''
+codisConnect.localHost = '127.0.0.1:6379'
+codisConnect.localPwd = ''
+codisConnect.connType = 'CODIS' //分别有 CODIS ALICLOUD LOCAL
+````
