@@ -27,12 +27,9 @@ class Conn implements ConnInterface
 
     private $configObject = null;
 
-    private $conf = [];
-
     public function __construct($config = [])
     {
-        $this->conf = array_merge($this->conf,$config);
-        $this->configObject = $this->initConfigure($this->conf);
+        $this->configObject = $this->initConfigure($config);
     }
 
     /**
