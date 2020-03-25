@@ -71,7 +71,7 @@ $zkLock->releaseLock();
 echo "zk end release lock\r\n";
 
 ````
-## V1.5版本增加了本地 阿里云 codis 三种缓存连接句柄
+## V2.0版本增加了本地 阿里云 codis 三种缓存连接句柄
 *配置文件*
 ````
 codisConnect.zkHost = '127.0.0.1:2181'
