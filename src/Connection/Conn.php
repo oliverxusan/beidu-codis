@@ -127,7 +127,7 @@ class Conn implements ConnInterface
                 if (!$sock && $this->refCount <= $this->retry){
                     $confObj->setConnType(ConnEnum::ALICLOUD);
                     $this->refCount++;
-                    $this->getAssignSock();
+                    return $this->getAssignSock();
                 }
                 return $sock;
             case ConnEnum::ALICLOUD:
@@ -135,16 +135,15 @@ class Conn implements ConnInterface
                 if (!$sock && $this->refCount <= $this->retry){
                     $confObj->setConnType(ConnEnum::LOCAL);
                     $this->refCount++;
-                    $this->getAssignSock();
+                    return $this->getAssignSock();
                 }
                 return $sock;
             case ConnEnum::LOCAL:
                 $sock = $this->initLocal($confObj);
-                var_dump($sock);
                 if (!$sock && $this->refCount <= $this->retry){
                     $confObj->setConnType(ConnEnum::YBRCLOUD);
                     $this->refCount++;
-                    $this->getAssignSock();
+                    return $this->getAssignSock();
                 }
                 return $sock;
             default:

@@ -32,7 +32,7 @@ class rdLock implements LockInterface
     {
         if (empty($this->_instance)){
             //默认读tp中yaconf配置文件
-            $this->_instance = new Cmd($config);
+            $this->_instance = Codis::getInstance();
         }
     }
 

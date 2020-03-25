@@ -39,10 +39,9 @@ class Codis
 
     /**
      * 获取当前cmd对象实例
-     * @param CmdInterface $cmd
      * @return object
      */
-    public static function getInstance(CmdInterface $cmd)
+    public static function getInstance()
     {
         if (static::$_instance == null){
             static::init();
