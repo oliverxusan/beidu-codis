@@ -147,7 +147,13 @@ class Conn implements ConnInterface
                 }
                 return $sock;
             default:
-                return $this->initCodis($confObj);
+                $sock = $this->initCodis($confObj);
+                if (!$sock && $this->refCount <= $this->retry){
+                    $confObj->setConnType(ConnEnum::ALICLOUD);
+                    $this->refCount++;
+                    return $this->getAssignSock();
+                }
+                return $sock;
         }
     }
 
