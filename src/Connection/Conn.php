@@ -142,7 +142,7 @@ class Conn implements ConnInterface
         switch (strtoupper($confObj->getConnType())){
             case ConnEnum::YBRCLOUD:
                 $sock = $this->initCodis($confObj);
-                if (!$sock || $this->refCount <= $this->retry){
+                if (!$sock && $this->refCount <= $this->retry){
                     $conf['connType'] = ConnEnum::ALICLOUD;
                     $this->refCount++;
                     $this->getAssignSock($conf);
@@ -151,7 +151,7 @@ class Conn implements ConnInterface
 //                return $this->initCodis($confObj);
             case ConnEnum::ALICLOUD:
                 $sock = $this->initAliRedis($confObj);
-                if (!$sock || $this->refCount <= $this->retry){
+                if (!$sock && $this->refCount <= $this->retry){
                     $conf['connType'] = ConnEnum::LOCAL;
                     $this->refCount++;
                     $this->getAssignSock($conf);
@@ -160,7 +160,7 @@ class Conn implements ConnInterface
 //                return $this->initAliRedis($confObj);
             case ConnEnum::LOCAL:
                 $sock = $this->initLocal($confObj);
-                if (!$sock || $this->refCount <= $this->retry){
+                if (!$sock && $this->refCount <= $this->retry){
                     $conf['connType'] = ConnEnum::YBRCLOUD;
                     $this->refCount++;
                     $this->getAssignSock($conf);
