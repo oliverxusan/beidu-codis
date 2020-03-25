@@ -137,36 +137,33 @@ class Conn implements ConnInterface
         if ($this->refCount > 3){
             throw new ConnException("The number of attempts has overflowed.");
         }
-        //init configure object
+
         $confObj = $this->configObject;
         switch (strtoupper($confObj->getConnType())){
             case ConnEnum::YBRCLOUD:
                 $sock = $this->initCodis($confObj);
                 if (!$sock && $this->refCount <= $this->retry){
-                    $conf['connType'] = ConnEnum::ALICLOUD;
+                    $confObj->setConnType(ConnEnum::ALICLOUD);
                     $this->refCount++;
-                    $this->getAssignSock($conf);
+                    $this->getAssignSock();
                 }
                 return $sock;
-//                return $this->initCodis($confObj);
             case ConnEnum::ALICLOUD:
                 $sock = $this->initAliRedis($confObj);
                 if (!$sock && $this->refCount <= $this->retry){
-                    $conf['connType'] = ConnEnum::LOCAL;
+                    $confObj->setConnType(ConnEnum::LOCAL);
                     $this->refCount++;
-                    $this->getAssignSock($conf);
+                    $this->getAssignSock();
                 }
                 return $sock;
-//                return $this->initAliRedis($confObj);
             case ConnEnum::LOCAL:
                 $sock = $this->initLocal($confObj);
                 if (!$sock && $this->refCount <= $this->retry){
-                    $conf['connType'] = ConnEnum::YBRCLOUD;
+                    $confObj->setConnType(ConnEnum::YBRCLOUD);
                     $this->refCount++;
-                    $this->getAssignSock($conf);
+                    $this->getAssignSock();
                 }
                 return $sock;
-//                return $this->initLocal($confObj);
             default:
                 return $this->initCodis($confObj);
         }
