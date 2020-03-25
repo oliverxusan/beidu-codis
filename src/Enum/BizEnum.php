@@ -8,7 +8,7 @@ namespace Ybren\Codis\Enum;
  * Class BizEnum
  * @package Ybren\Codis\Enum
  */
-class BizEnum
+class BizEnum extends Enum
 {
     /**
      * 默认前缀

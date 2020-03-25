@@ -8,7 +8,7 @@ namespace Ybren\Codis\Enum;
  * Class ConnEnum
  * @package Ybren\Codis\Enum
  */
-class ConnEnum
+class ConnEnum extends Enum
 {
     /**
      * 阿里云缓存

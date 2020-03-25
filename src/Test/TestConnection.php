@@ -4,6 +4,7 @@
 namespace Ybren\Codis\Test;
 
 
+use Ybren\Codis\Codis;
 use Ybren\Codis\Config\Conf;
 use Ybren\Codis\Connection\Conn;
 use Ybren\Codis\Zookeeper\RedisFromZk;
@@ -16,5 +17,6 @@ class TestConnection
         $conn->getSock($config,function (Conf $c){
             return RedisFromZk::connection($c);
         });
+
     }
 }
