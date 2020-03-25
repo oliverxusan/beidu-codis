@@ -43,6 +43,7 @@ class Conn implements ConnInterface
         $this->verifyConnType(strtoupper($type));
         $this->connType = $type;
         $this->configObject->setConnType(strtoupper($type));
+        $this->switchVerify($this->configObject);
     }
 
     /**
@@ -81,31 +82,12 @@ class Conn implements ConnInterface
             throw new ConnException('not support: redis');
         }
         $f = new Conf();
+        $this->verifyConnType($conf['connType']);
 
-        $this->verifyConnType($f->getConnType());
-
-        // redis ali配置
-        if (strtoupper($conf['connType']) == ConnEnum::ALICLOUD){
-            if (!isset($conf['aliHost']) || empty($conf['aliHost'])){
-                throw new ConnException("Select one Connection type which ALICLOUD . aliHost field is require.");
-            }
-            if (!strstr($conf['aliHost'],":")){
-                throw new ConnException("Please set ALI redis port");
-            }
-            $f->setAliHost($conf['aliHost']);
-            $f->setAliPwd($conf['aliPwd']);
-        }
-        // redis 本地配置
-        if (strtoupper($conf['connType']) == ConnEnum::LOCAL){
-            if (!isset($conf['localHost']) || empty($conf['localHost'])){
-                throw new ConnException("Select one Connection type which LOCAL. localHost field is require.");
-            }
-            if (!strstr($conf['localHost'],":")){
-                throw new ConnException("Please set Local redis port");
-            }
-            $f->setLocalHost($conf['localHost']);
-            $f->setLocalPwd($conf['localPwd']);
-        }
+        $f->setAliHost($conf['aliHost']);
+        $f->setAliPwd($conf['aliPwd']);
+        $f->setLocalHost($conf['localHost']);
+        $f->setLocalPwd($conf['localPwd']);
 
         $f->setPassword($conf['password']);
         $f->setPrefix($conf['prefix']);
@@ -134,7 +116,7 @@ class Conn implements ConnInterface
      */
     public function getAssignSock()
     {
-        if ($this->refCount > 3){
+        if ($this->refCount >= 3){
             throw new ConnException("The number of attempts has overflowed.");
         }
 
@@ -158,6 +140,7 @@ class Conn implements ConnInterface
                 return $sock;
             case ConnEnum::LOCAL:
                 $sock = $this->initLocal($confObj);
+                var_dump($sock);
                 if (!$sock && $this->refCount <= $this->retry){
                     $confObj->setConnType(ConnEnum::YBRCLOUD);
                     $this->refCount++;
@@ -177,17 +160,21 @@ class Conn implements ConnInterface
      */
     public function initCodis(Conf $conf)
     {
-        $sock = RedisFromZk::connection($conf);
-        if (empty($conf->getPrefix())) {
-            $conf->setPrefix(BizEnum::NORMAL);
+        try {
+            $sock = RedisFromZk::connection($conf);
+            if (!$conf->getPrefix()) {
+                $conf->setPrefix(BizEnum::NORMAL);
+            }
+            if ($conf->getPassword()) {
+                $sock->auth($conf->getPassword());
+            }
+            if ($conf->getSelect() > 0) {
+                $sock->select($conf->getSelect());
+            }
+            return $sock;
+        }catch (\Exception $e){
+            return false;
         }
-        if ($conf->getPassword()) {
-            $sock->auth($conf->getPassword());
-        }
-        if ($conf->getSelect() > 0) {
-            $sock->select($conf->getSelect());
-        }
-        return $sock;
     }
 
     /**
@@ -197,18 +184,22 @@ class Conn implements ConnInterface
      */
     public function initAliRedis(Conf $conf)
     {
-        $sock = new \Redis();
-        if (strstr($conf->getAliHost(),":")){
-            list($host,$port) = explode(":",$conf->getAliHost());
-            $sock->connect($host,$port,$conf->getTimeout());
+        try {
+            $sock = new \Redis();
+            if (strstr($conf->getAliHost(), ":")) {
+                list($host, $port) = explode(":", $conf->getAliHost());
+                $sock->connect($host, $port, $conf->getTimeout());
+            }
+            if ($conf->getAliPwd()) {
+                $sock->auth($conf->getAliPwd());
+            }
+            if ($conf->getSelect() > 0) {
+                $sock->select($conf->getSelect());
+            }
+            return $sock;
+        }catch (\Exception $e){
+            return false;
         }
-        if ($conf->getAliPwd()) {
-            $sock->auth($conf->getAliPwd());
-        }
-        if ($conf->getSelect() > 0) {
-            $sock->select($conf->getSelect());
-        }
-        return $sock;
     }
 
     /**
@@ -218,18 +209,22 @@ class Conn implements ConnInterface
      */
     public function initLocal(Conf $conf)
     {
-        $sock = new \Redis();
-        if (strstr($conf->getLocalHost(),":")){
-            list($host,$port) = explode(":",$conf->getLocalHost());
-            $sock->connect($host,$port,$conf->getTimeout());
+        try {
+            $sock = new \Redis();
+            if (strstr($conf->getLocalHost(), ":")) {
+                list($host, $port) = explode(":", $conf->getLocalHost());
+                $sock->connect($host, $port, $conf->getTimeout());
+            }
+            if ($conf->getLocalPwd()) {
+                $sock->auth($conf->getLocalPwd());
+            }
+            if ($conf->getSelect() > 0) {
+                $sock->select($conf->getSelect());
+            }
+            return $sock;
+        }catch (\Exception $e){
+            return false;
         }
-        if ($conf->getLocalPwd()) {
-            $sock->auth($conf->getLocalPwd());
-        }
-        if ($conf->getSelect() > 0) {
-            $sock->select($conf->getSelect());
-        }
-        return $sock;
     }
 
     /**
@@ -251,6 +246,32 @@ class Conn implements ConnInterface
     {
         if (!in_array($connType,[ConnEnum::ALICLOUD,ConnEnum::LOCAL,ConnEnum::YBRCLOUD])){
             throw new ConnException("Unknow Connection Type.");
+        }
+    }
+
+    /**
+     * 验证类型数据是否正确
+     * @param Conf $f
+     * @throws ConnException
+     */
+    private function switchVerify(Conf $f){
+        // redis ali配置
+        if (strtoupper($f->getConnType()) == ConnEnum::ALICLOUD){
+            if (!$f->getAliHost()){
+                throw new ConnException("Select one Connection type which ALICLOUD . aliHost field is require.");
+            }
+            if (!strstr($f->getAliHost(),":")){
+                throw new ConnException("Please set ALI redis port");
+            }
+        }
+        // redis 本地配置
+        if (strtoupper($f->getConnType()) == ConnEnum::LOCAL){
+            if (!$f->getLocalHost()){
+                throw new ConnException("Select one Connection type which LOCAL. localHost field is require.");
+            }
+            if (!strstr($f->getLocalHost(),":")){
+                throw new ConnException("Please set Local redis port");
+            }
         }
     }
 }

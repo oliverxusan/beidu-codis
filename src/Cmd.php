@@ -37,6 +37,7 @@ class Cmd implements CmdInterface
             throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
         }
         $config = \think\Config::iniGet('codisConnect');
+
         $conn = new Conn($config);
         //切换连接类型
         if (!empty($connType)){
@@ -46,12 +47,12 @@ class Cmd implements CmdInterface
         $this->handler = $conn->getAssignSock();
         //获取配置对象类
         $confObj = $conn->getConfObj();
-        if (empty($confObj->getPrefix())) {
+        if (!$confObj->getPrefix()) {
             $this->prefix = BizEnum::NORMAL;
         }else{
             $this->prefix = $confObj->getPrefix();
         }
-        if (!empty($confObj->getExpire())){
+        if ($confObj->getExpire()){
             $this->expire = $confObj->getExpire();
         }
     }
