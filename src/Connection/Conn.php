@@ -83,7 +83,7 @@ class Conn implements ConnInterface
         }
         $f = new Conf();
         $this->verifyConnType($conf['connType']);
-
+        $f->setConnType($conf['connType']);
         $f->setAliHost($conf['aliHost']);
         $f->setAliPwd($conf['aliPwd']);
         $f->setLocalHost($conf['localHost']);
