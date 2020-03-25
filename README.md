@@ -47,6 +47,9 @@ Codis::hGet($key, $k1)
 Codis::hSet($key, $k1, $v1)
 Codis::hGetAll($key)
 Codis::hDel($key, $k1)
+
+设置前缀
+Codis::setPrefix("ddd_");
 ````
 > 分布式锁 zookeeper锁和 redis锁
 
