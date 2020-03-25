@@ -71,6 +71,39 @@ $zkLock->releaseLock();
 echo "zk end release lock\r\n";
 
 ````
+## V1.5版本增加了本地 阿里云 codis 三种缓存连接句柄
+*配置文件*
+````
+codisConnect.zkHost = '127.0.0.1:2181'
+codisConnect.zkPassword = 'username:password'
+codisConnect.zkName = 'codis项目名称'
+codisConnect.zkTimeout = 5
+codisConnect.retryTime = 3
+codisConnect.password = 'redis密码'
+codisConnect.select = 0 
+codisConnect.timeout = 3
+codisConnect.expire = 3600
+codisConnect.prefix = ''
+codisConnect.aliHost = '127.0.0.1:6379'
+codisConnect.aliPwd = ''
+codisConnect.localHost = '127.0.0.1:6379'
+codisConnect.localPwd = ''
+codisConnect.connType = 'CODIS' //分别有 CODIS ALICLOUD LOCAL
+````
+
+### 切换连接类型
+````
+三种类型 Codis分布式缓存 ConnEnum::YBRCLOUD  阿里云redis ConnEnum::ALICLOUD  本地redis ConnEnum::LOCAL
+
+//切换到本地
+Codis::switchConnType(ConnEnum::LOCAL);
+//获取redis句柄 可以操作redis扩展的命令 除了部分命令不能使用之外其余都可以
+$redis = Codis::handler();
+
+//切换封装的命令操作类CMD类  Coids::getInstance()
+可以使用 Cmd.php 所有方法 通过静态访问
+Coids::set($key,$value,$ttl) 
+````
 
 > Codis禁用命令如下
 
@@ -156,23 +189,3 @@ echo "zk end release lock\r\n";
 |                  |                  |
 |   Scripting      | EVAL             |
 |                  | EVALSHA          |
-
-## V2.0版本增加了本地 阿里云 codis 三种缓存连接句柄
-*配置文件*
-````
-codisConnect.zkHost = '127.0.0.1:2181'
-codisConnect.zkPassword = 'username:password'
-codisConnect.zkName = 'codis项目名称'
-codisConnect.zkTimeout = 5
-codisConnect.retryTime = 3
-codisConnect.password = 'redis密码'
-codisConnect.select = 0 
-codisConnect.timeout = 3
-codisConnect.expire = 3600
-codisConnect.prefix = ''
-codisConnect.aliHost = '127.0.0.1:6379'
-codisConnect.aliPwd = ''
-codisConnect.localHost = '127.0.0.1:6379'
-codisConnect.localPwd = ''
-codisConnect.connType = 'CODIS' //分别有 CODIS ALICLOUD LOCAL
-````

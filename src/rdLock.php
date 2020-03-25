@@ -32,7 +32,7 @@ class rdLock implements LockInterface
     {
         if (empty($this->_instance)){
             //默认读tp中yaconf配置文件
-            $this->_instance = Codis::getInstance();
+            $this->_instance = Codis::handler();
         }
     }
 
@@ -46,12 +46,7 @@ class rdLock implements LockInterface
      */
     public function acquireLock($key, $clientId, $ttl = 5)
     {
-        $bool = $this->_instance->setNx($key,$clientId);
-        if ($bool) {
-            $this->_instance->expire($key,$ttl);
-            return true;
-        }
-        return false;
+        return $this->_instance->set($key,$clientId, ['NX', 'EX'=>$ttl]);
     }
 
     /**
@@ -62,6 +57,6 @@ class rdLock implements LockInterface
      */
     public function releaseLock($key, $clientId)
     {
-        return $this->_instance->handler()->eval(static::SCRIPT, [$key, $clientId], 1);
+        return $this->_instance->eval(static::SCRIPT, [$key, $clientId], 1);
     }
 }
