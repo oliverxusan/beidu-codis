@@ -103,6 +103,15 @@ $redis = Codis::handler();
 //切换封装的命令操作类CMD类  Coids::getInstance()
 可以使用 Cmd.php 所有方法 通过静态访问
 Coids::set($key,$value,$ttl) 
+
+//增加前缀枚举类 如需自定义 可以继承此枚举类
+//枚举订单前缀
+BizEnum::ORDER
+...
+
+class Custom extends BizEnum{
+    const XX = "HAHAH_"; 自定义前缀
+}
 ````
 
 > Codis禁用命令如下
