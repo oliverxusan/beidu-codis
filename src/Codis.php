@@ -37,6 +37,10 @@ class Codis
     //cmd实例
     private static $_instance = null;
 
+    /**
+     * 数据源枚举实例 扩展需继承 ConnEnum类
+     * @var ConnEnum 对象
+     */
     private static $_connType = null;
 
     /**
@@ -48,14 +52,13 @@ class Codis
     }
 
     private static function init(){
-        if (!empty(static::$_instance)){
-            return static::$_instance;
-        }
         if (empty(static::$_connType)){
             static::$_connType = ConnEnum::YBRCLOUD();
         }
-        static::$_instance = new Cmd(static::$_connType);
-        return static::$_instance;
+        if (isset(static::$_instance[(string)static::$_connType])){
+            return static::$_instance[(string)static::$_connType];
+        }
+        return static::$_instance[(string)static::$_connType] = new Cmd(static::$_connType);
     }
 
 
@@ -70,10 +73,10 @@ class Codis
      */
     public static function getInstance()
     {
-        if (static::$_instance == null){
+        if (!isset(static::$_instance[(string)static::$_connType])){
             static::init();
         }
-        return static::$_instance;
+        return static::$_instance[(string)static::$_connType];
     }
 
     /**
