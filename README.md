@@ -105,42 +105,13 @@ $zkLock->releaseLock();
 echo "zk end release lock\r\n";
 
 ````
-## V2.0版本增加了本地 阿里云 codis 三种缓存连接句柄
-*配置文件*
-````
-codisConnect.zkHost = '127.0.0.1:2181'
-codisConnect.zkPassword = 'username:password'
-codisConnect.zkName = 'codis项目名称'
-codisConnect.zkTimeout = 5
-codisConnect.retryTime = 3
-codisConnect.password = 'redis密码'
-codisConnect.select = 0 
-codisConnect.timeout = 3
-codisConnect.expire = 3600
-codisConnect.prefix = ''
-codisConnect.connType = 'CODIS' //分别有 CODIS ALICLOUD LOCAL
-
-alicloudConnect.host = '127.0.0.1:6379'
-alicloudConnect.password = 'redis密码'
-alicloudConnect.select = 0 
-alicloudConnect.timeout = 3
-alicloudConnect.expire = 3600
-alicloudConnect.prefix = ''
-
-localConnect.host = '127.0.0.1:6379'
-localConnect.password = 'redis密码'
-localConnect.select = 0 
-localConnect.timeout = 3
-localConnect.expire = 3600
-localConnect.prefix = ''
-````
 
 ### 切换连接类型
 ````
-三种类型 Codis分布式缓存 ConnEnum::YBRCLOUD  阿里云redis ConnEnum::ALICLOUD  本地redis ConnEnum::LOCAL
+三种类型 Codis分布式缓存 ConnEnum::YBRCLOUD()  阿里云redis ConnEnum::ALICLOUD()  本地redis ConnEnum::LOCAL()
 
 //切换到本地
-Codis::switchConnType(ConnEnum::LOCAL);
+Codis::switchConnType(ConnEnum::LOCAL());
 //获取redis句柄 可以操作redis扩展的命令 除了部分命令不能使用之外其余都可以
 $redis = Codis::handler();
 
@@ -150,7 +121,7 @@ Coids::set($key,$value,$ttl)
 
 //增加前缀枚举类 如需自定义 可以继承此枚举类
 //枚举订单前缀
-BizEnum::ORDER
+BizEnum::ORDER()
 ...
 
 class Custom extends BizEnum{
