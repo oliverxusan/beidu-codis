@@ -5,6 +5,7 @@ namespace Ybren\Codis;
 
 
 use Ybren\Codis\Connection\Conn;
+use Ybren\Codis\Connection\ConnInterface;
 use Ybren\Codis\Enum\BizEnum;
 use Ybren\Codis\Enum\ConnEnum;
 
@@ -23,13 +24,12 @@ class Cmd implements CmdInterface
 
     /**
      * 构造函数
-     * @param ConnEnum $connObj 连接类型
+     * @param ConnInterface $conn
      * @return void
      * @throws \Exception
      */
-    public function __construct(ConnEnum $connObj)
+    public function __construct(ConnInterface $conn)
     {
-        $conn = new Conn($connObj);
         if (empty($this->handler)){
             //获取连接句柄
             $this->handler = $conn->getAssignSock();
