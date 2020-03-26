@@ -37,10 +37,6 @@ class Codis
     //cmd实例
     private static $_instance = null;
 
-    /**
-     * 数据源枚举实例 扩展需继承 ConnEnum类
-     * @var ConnEnum 对象
-     */
     private static $_connType = null;
 
     /**
@@ -74,7 +70,7 @@ class Codis
     public static function getInstance()
     {
         if (!isset(static::$_instance[(string)static::$_connType])){
-            static::init();
+            return static::init();
         }
         return static::$_instance[(string)static::$_connType];
     }
