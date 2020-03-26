@@ -18,6 +18,37 @@ codisConnect.select = 0
 codisConnect.timeout = 3
 codisConnect.expire = 3600
 codisConnect.prefix = ''
+codisConnect.connType = 'CODIS' //分别有 CODIS ALICLOUD LOCAL
+
+可以N个连接配置 根据你继承ConnEnum 枚举类
+默认3种数据配置源
+alicloudConnect.host = '127.0.0.1:6379'
+alicloudConnect.password = 'redis密码'
+alicloudConnect.select = 0 
+alicloudConnect.timeout = 3
+alicloudConnect.expire = 3600
+alicloudConnect.prefix = ''
+
+localConnect.host = '127.0.0.1:6379'
+localConnect.password = 'redis密码'
+localConnect.select = 0 
+localConnect.timeout = 3
+localConnect.expire = 3600
+localConnect.prefix = ''
+
+比如我想增加 SockEnum枚举类
+class SockEnum extends ConnEnum{
+    protected const SOURCE_ONE = "ONE"
+}
+
+那么你要在yaconf 配置中如下配置
+oneConnect.host = '127.0.0.1:6379'
+oneConnect.password = 'redis密码'
+oneConnect.select = 0 
+oneConnect.timeout = 3
+oneConnect.expire = 3600
+oneConnect.prefix = ''
+
 ````
 
 >静态调用操作命令
