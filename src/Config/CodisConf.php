@@ -18,7 +18,7 @@ namespace Ybren\Codis\Config;
  * Class Conf
  * @package Ybren\Codis\Config
  */
-class Conf
+class CodisConf
 {
     /**
      * zookeeper ip:端号 地址 多个用逗号隔开
