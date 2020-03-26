@@ -2,6 +2,7 @@
 namespace Ybren\Codis;
 
 
+use Ybren\Codis\Connection\Conn;
 use Ybren\Codis\Enum\ConnEnum;
 use Ybren\Codis\Exception\ConnException;
 
@@ -54,7 +55,7 @@ class Codis
         if (isset(static::$_instance[(string)static::$_connType])){
             return static::$_instance[(string)static::$_connType];
         }
-        return static::$_instance[(string)static::$_connType] = new Cmd(static::$_connType);
+        return static::$_instance[(string)static::$_connType] = new Cmd(new Conn(static::$_connType));
     }
 
 
