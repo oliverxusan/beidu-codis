@@ -4,6 +4,7 @@
 namespace Ybren\Codis\Zookeeper;
 
 
+use Ybren\Codis\Config\CodisConf;
 use Ybren\Codis\Config\Conf;
 use Ybren\Codis\Exception\CodisException;
 
@@ -18,11 +19,11 @@ class RedisFromZk
     private static $timeout = 3;
 
     /**
-     * @param Conf $conf
+     * @param CodisConf $conf
      * @return Object Redis
      * @throws CodisException
      */
-    public static function connection(Conf $conf){
+    public static function connection(CodisConf $conf){
         static::$timeout = $conf->getTimeout();
         return static::getCodisInstance($conf->getZkHost(), "/jodis/".$conf->getZkName(),$conf->getZkPassword(), $conf->getRetryTime());
     }

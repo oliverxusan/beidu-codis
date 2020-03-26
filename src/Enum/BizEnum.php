@@ -6,6 +6,11 @@ namespace Ybren\Codis\Enum;
 /**
  * 业务枚举类前缀
  * Class BizEnum
+ * @method static BizEnum NORMAL()
+ * @method static BizEnum ORDER()
+ * @method static BizEnum PAY()
+ * @method static BizEnum FABRIC()
+ * @method static BizEnum CRAFT()
  * @package Ybren\Codis\Enum
  */
 class BizEnum extends Enum
@@ -13,25 +18,25 @@ class BizEnum extends Enum
     /**
      * 默认前缀
      */
-    const NORMAL = "normal_";
+    protected const NORMAL = "normal_";
 
     /**
      * 订单
      */
-    const ORDER  = "order_";
+    protected const ORDER  = "order_";
 
     /**
      * 支付
      */
-    const PAY    = "pay_";
+    protected const PAY    = "pay_";
 
     /**
      * 面料
      */
-    const FABRIC  = "fabric_";
+    protected const FABRIC  = "fabric_";
 
     /**
      * 工艺
      */
-    const CRAFT = "craft_";
+    protected const CRAFT = "craft_";
 }

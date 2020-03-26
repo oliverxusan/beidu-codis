@@ -4,17 +4,8 @@
 namespace Ybren\Codis\Connection;
 
 
-use Ybren\Codis\Enum\ConnEnum;
-
 interface ConnInterface
 {
-
-    /**
-     * 设置连接类型
-     * @param ConnEnum $type
-     * @return mixed
-     */
-    public function setConnType($type);
 
     /**
      * 获取连接类型
@@ -24,11 +15,10 @@ interface ConnInterface
 
     /**
      * 通过匿名函数获取连接句柄
-     * @param array $conf
      * @param callable $callback
      * @return mixed
      */
-    public function getSock($conf, $callback);
+    public function getSock($callback);
 
     /**
      * 通过分配的连接方式获取句柄

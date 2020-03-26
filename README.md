@@ -87,11 +87,21 @@ codisConnect.select = 0
 codisConnect.timeout = 3
 codisConnect.expire = 3600
 codisConnect.prefix = ''
-codisConnect.aliHost = '127.0.0.1:6379'
-codisConnect.aliPwd = ''
-codisConnect.localHost = '127.0.0.1:6379'
-codisConnect.localPwd = ''
 codisConnect.connType = 'CODIS' //分别有 CODIS ALICLOUD LOCAL
+
+alicloudConnect.host = '127.0.0.1:6379'
+alicloudConnect.password = 'redis密码'
+alicloudConnect.select = 0 
+alicloudConnect.timeout = 3
+alicloudConnect.expire = 3600
+alicloudConnect.prefix = ''
+
+localConnect.host = '127.0.0.1:6379'
+localConnect.password = 'redis密码'
+localConnect.select = 0 
+localConnect.timeout = 3
+localConnect.expire = 3600
+localConnect.prefix = ''
 ````
 
 ### 切换连接类型

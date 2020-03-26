@@ -2,6 +2,9 @@
 namespace Ybren\Codis;
 
 
+use Ybren\Codis\Enum\ConnEnum;
+use Ybren\Codis\Exception\ConnException;
+
 /**
  * 分布式缓存 当NOSQL使用
  * Class Codis
@@ -48,6 +51,9 @@ class Codis
         if (!empty(static::$_instance)){
             return static::$_instance;
         }
+        if (empty(static::$_connType)){
+            static::$_connType = ConnEnum::YBRCLOUD();
+        }
         static::$_instance = new Cmd(static::$_connType);
         return static::$_instance;
     }
@@ -55,7 +61,6 @@ class Codis
 
     // 调用静态方法
     public static function __callStatic($method, $params){
-
         return call_user_func_array(array(static::init(), $method), $params);
     }
 
@@ -71,9 +76,15 @@ class Codis
         return static::$_instance;
     }
 
-    public static function switchConnType($type){
-        if (!empty($type)){
-            static::$_connType = $type;
+    /**
+     * 切换数据源
+     * @param $enumObj 枚举对象值
+     * @throws ConnException
+     */
+    public static function switchConnType($enumObj){
+        if (!$enumObj instanceof ConnEnum){
+            throw new ConnException("It must is a instance which is ConnEnum class. Or given one which is extends of ConnEnum class instance ");
         }
+        static::$_connType = $enumObj;
     }
 }

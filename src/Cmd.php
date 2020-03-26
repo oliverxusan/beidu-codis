@@ -7,9 +7,6 @@ namespace Ybren\Codis;
 use Ybren\Codis\Connection\Conn;
 use Ybren\Codis\Enum\BizEnum;
 use Ybren\Codis\Enum\ConnEnum;
-use Ybren\Codis\Exception\CodisException;
-use Ybren\Codis\Exception\ConnException;
-use Ybren\Codis\Zookeeper\RedisFromZk;
 
 class Cmd implements CmdInterface
 {
@@ -26,34 +23,28 @@ class Cmd implements CmdInterface
 
     /**
      * 构造函数
-     * @param ConnEnum $connType 连接类型
+     * @param ConnEnum $connObj 连接类型
      * @return void
      * @throws \Exception
      */
-    public function __construct($connType = null)
+    public function __construct(ConnEnum $connObj)
     {
-
-        if(!class_exists("\\think\\Config")){
-            throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
+        $conn = new Conn($connObj);
+        if (empty($this->handler)){
+            //获取连接句柄
+            $this->handler = $conn->getAssignSock();
         }
-        $config = \think\Config::iniGet('codisConnect');
-
-        $conn = new Conn($config);
-        //切换连接类型
-        if (!empty($connType)){
-            $conn->setConnType($connType);
-        }
-        //获取连接句柄
-        $this->handler = $conn->getAssignSock();
         //获取配置对象类
         $confObj = $conn->getConfObj();
-        if (!$confObj->getPrefix()) {
-            $this->prefix = BizEnum::NORMAL;
-        }else{
-            $this->prefix = $confObj->getPrefix();
-        }
-        if ($confObj->getExpire()){
-            $this->expire = $confObj->getExpire();
+        if ($confObj){
+            if (!$confObj->getPrefix()) {
+                $this->prefix = BizEnum::NORMAL();
+            }else{
+                $this->prefix = $confObj->getPrefix();
+            }
+            if ($confObj->getExpire()){
+                $this->expire = $confObj->getExpire();
+            }
         }
     }
     /**

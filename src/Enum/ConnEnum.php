@@ -6,6 +6,9 @@ namespace Ybren\Codis\Enum;
 /**
  * 连接类型枚举
  * Class ConnEnum
+ * @method static ConnEnum ALICLOUD()
+ * @method static ConnEnum YBRCLOUD()
+ * @method static ConnEnum LOCAL()
  * @package Ybren\Codis\Enum
  */
 class ConnEnum extends Enum
@@ -13,15 +16,16 @@ class ConnEnum extends Enum
     /**
      * 阿里云缓存
      */
-    const ALICLOUD = "ALICLOUD";
+    protected const ALICLOUD = "ALICLOUD";
 
     /**
      * 衣邦人缓存
      */
-    const YBRCLOUD = "CODIS";
+    protected const YBRCLOUD = "CODIS";
 
     /**
      * 本地缓存
      */
-    const LOCAL    = "LOCAL";
+    protected const LOCAL    = "LOCAL";
+
 }

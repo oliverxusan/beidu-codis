@@ -4,10 +4,11 @@
 namespace Ybren\Codis\Connection;
 
 
-use Ybren\Codis\Config\Conf;
-use Ybren\Codis\Enum\BizEnum;
+use Ybren\Codis\Config\CodisConf;
+use Ybren\Codis\Config\RedisConf;
 use Ybren\Codis\Enum\ConnEnum;
 use Ybren\Codis\Exception\CodisException as CodisExceptionAlias;
+use Ybren\Codis\Exception\CodisException;
 use Ybren\Codis\Exception\ConnException;
 use Ybren\Codis\Zookeeper\RedisFromZk;
 
@@ -21,29 +22,18 @@ class Conn implements ConnInterface
 
     private $connType = null;
 
-    private $retry = 3;
+    private $configObject = [];
 
-    private $refCount = 0;
-
-    private $configObject = null;
-
-    public function __construct($config = [])
+    public function __construct(ConnEnum $connObj)
     {
-        $this->configObject = $this->initConfigure($config);
-    }
-
-    /**
-     * 设置连接类型
-     * @param ConnEnum $type
-     * @return mixed
-     * @throws ConnException
-     */
-    public function setConnType($type)
-    {
-        $this->verifyConnType(strtoupper($type));
-        $this->connType = $type;
-        $this->configObject->setConnType(strtoupper($type));
-        $this->switchVerify($this->configObject);
+        if(!class_exists("\\think\\Config")){
+            throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
+        }
+        foreach ($connObj::toArray() as $key=>$value){
+            $config = \think\Config::iniGet(strtolower($value).'Connect');
+            !empty($config) && $this->configObject[strtoupper($key)] = $this->initConfigure($config,strtoupper($key));
+        }
+        $this->connType = $connObj->getKey();
     }
 
     /**
@@ -57,11 +47,10 @@ class Conn implements ConnInterface
 
     /**
      * 通过匿名函数获取连接句柄
-     * @param array $conf
      * @param callable $callback
      * @return object
      */
-    public function getSock($conf, $callback)
+    public function getSock($callback)
     {
         return $callback($this->configObject);
     }
@@ -70,42 +59,40 @@ class Conn implements ConnInterface
     /**
      * 初始化配置文件
      * @param array $conf
+     * @param string $connType
      * @return object
      * @throws ConnException
      */
-    public function initConfigure($conf)
+    public function initConfigure($conf, $connType = 'YBRCLOUD')
     {
         if (empty($conf)){
             throw new ConnException("config set is nil");
         }
-        if (!extension_loaded('redis')) {
-            throw new ConnException('not support: redis');
-        }
-        $f = new Conf();
-        $this->verifyConnType($conf['connType']);
-        $f->setConnType($conf['connType']);
-        $f->setAliHost($conf['aliHost']);
-        $f->setAliPwd($conf['aliPwd']);
-        $f->setLocalHost($conf['localHost']);
-        $f->setLocalPwd($conf['localPwd']);
-
-        $f->setPassword($conf['password']);
-        $f->setPrefix($conf['prefix']);
-        !$conf['select'] ? $f->setSelect(0) : $f->setSelect($conf['select']);
-        !$conf['expire'] ? $f->setExpire(86400) : $f->setExpire($conf['expire']);
-        !$conf['timeOut'] ? $f->setTimeout(3) : $f->setTimeout($conf['timeOut']);
-
-        //zookeeper配置
-        if (strtoupper($conf['connType']) == ConnEnum::YBRCLOUD){
+        if ($connType == 'YBRCLOUD'){
+            $f = new CodisConf();
+            $f->setPassword($conf['password']);
+            $f->setPrefix($conf['prefix']);
+            !$conf['select'] ? $f->setSelect(0) : $f->setSelect($conf['select']);
+            !$conf['expire'] ? $f->setExpire(86400) : $f->setExpire($conf['expire']);
+            !$conf['timeout'] ? $f->setTimeout(3) : $f->setTimeout($conf['timeout']);
             if (!isset($conf['zkHost']) || empty($conf['zkHost'])){
                 throw new ConnException("Select Codis Connection type. zkHost field is require.");
             }
             $f->setZkHost($conf['zkHost']);
+            $f->setZkPassword($conf['zkPassword']);
+            !$conf['retryTime'] ? $f->setRetryTime(3) : $f->setRetryTime($conf['retryTime']);
+            $f->setZkName($conf['zkName']);
+            return $f;
+        }else{
+            $f = new RedisConf();
+            $f->setHost($conf['host']);
+            $f->setPassword($conf['password']);
+            $f->setPrefix($conf['prefix']);
+            !$conf['select'] ? $f->setSelect(0) : $f->setSelect($conf['select']);
+            !$conf['expire'] ? $f->setExpire(86400) : $f->setExpire($conf['expire']);
+            !$conf['timeout'] ? $f->setTimeout(3) : $f->setTimeout($conf['timeout']);
+            return $f;
         }
-        $f->setZkPassword($conf['zkPassword']);
-        !$conf['retryTime'] ? $f->setRetryTime(3) : $f->setRetryTime($conf['retryTime']);
-        $f->setZkName($conf['zkName']);
-        return $f;
     }
 
     /**
@@ -116,60 +103,34 @@ class Conn implements ConnInterface
      */
     public function getAssignSock()
     {
-        if ($this->refCount >= 3){
-            throw new ConnException("The number of attempts has overflowed.");
+        $sock = null;
+        //获取当前设置连接源
+        if (isset($this->configObject[$this->getConnType()])){
+            $config = $this->configObject[$this->getConnType()];
+            if ($this->getConnType() == 'YBRCLOUD'){
+                $sock = $this->initCodis($config);
+            }else{
+                $sock = $this->initRedis($config);
+            }
+        }else{
+            throw new ConnException( "Constant " . $this->getConnType() . " in Enum Class, Config Information is blank.");
         }
-
-        $confObj = $this->configObject;
-        switch (strtoupper($confObj->getConnType())){
-            case ConnEnum::YBRCLOUD:
-                $sock = $this->initCodis($confObj);
-                if (!$sock && $this->refCount <= $this->retry){
-                    $confObj->setConnType(ConnEnum::ALICLOUD);
-                    $this->refCount++;
-                    return $this->getAssignSock();
-                }
-                return $sock;
-            case ConnEnum::ALICLOUD:
-                $sock = $this->initAliRedis($confObj);
-                if (!$sock && $this->refCount <= $this->retry){
-                    $confObj->setConnType(ConnEnum::LOCAL);
-                    $this->refCount++;
-                    return $this->getAssignSock();
-                }
-                return $sock;
-            case ConnEnum::LOCAL:
-                $sock = $this->initLocal($confObj);
-                if (!$sock && $this->refCount <= $this->retry){
-                    $confObj->setConnType(ConnEnum::YBRCLOUD);
-                    $this->refCount++;
-                    return $this->getAssignSock();
-                }
-                return $sock;
-            default:
-                $sock = $this->initCodis($confObj);
-                if (!$sock && $this->refCount <= $this->retry){
-                    $confObj->setConnType(ConnEnum::ALICLOUD);
-                    $this->refCount++;
-                    return $this->getAssignSock();
-                }
-                return $sock;
+        if ($sock){
+            return $sock;
         }
+        throw new ConnException("Connection is wrong!!");
     }
 
     /**
      * 初始化codis
-     * @param Conf $conf
+     * @param CodisConf $conf
      * @return \Redis
      * @throws CodisExceptionAlias
      */
-    public function initCodis(Conf $conf)
+    public function initCodis(CodisConf $conf)
     {
         try {
             $sock = RedisFromZk::connection($conf);
-            if (!$conf->getPrefix()) {
-                $conf->setPrefix(BizEnum::NORMAL);
-            }
             if ($conf->getPassword()) {
                 $sock->auth($conf->getPassword());
             }
@@ -183,45 +144,20 @@ class Conn implements ConnInterface
     }
 
     /**
-     * 初始化ali redis
-     * @param Conf $conf
+     * 初始化 redis
+     * @param RedisConf $conf
      * @return \Redis
      */
-    public function initAliRedis(Conf $conf)
+    public function initRedis(RedisConf $conf)
     {
         try {
             $sock = new \Redis();
-            if (strstr($conf->getAliHost(), ":")) {
-                list($host, $port) = explode(":", $conf->getAliHost());
+            if (strstr($conf->getHost(), ":")) {
+                list($host, $port) = explode(":", $conf->getHost());
                 $sock->connect($host, $port, $conf->getTimeout());
             }
-            if ($conf->getAliPwd()) {
-                $sock->auth($conf->getAliPwd());
-            }
-            if ($conf->getSelect() > 0) {
-                $sock->select($conf->getSelect());
-            }
-            return $sock;
-        }catch (\Exception $e){
-            return false;
-        }
-    }
-
-    /**
-     * 初始化本地 redis
-     * @param Conf $conf
-     * @return \Redis
-     */
-    public function initLocal(Conf $conf)
-    {
-        try {
-            $sock = new \Redis();
-            if (strstr($conf->getLocalHost(), ":")) {
-                list($host, $port) = explode(":", $conf->getLocalHost());
-                $sock->connect($host, $port, $conf->getTimeout());
-            }
-            if ($conf->getLocalPwd()) {
-                $sock->auth($conf->getLocalPwd());
+            if ($conf->getPassword()) {
+                $sock->auth($conf->getPassword());
             }
             if ($conf->getSelect() > 0) {
                 $sock->select($conf->getSelect());
@@ -238,45 +174,6 @@ class Conn implements ConnInterface
      */
     public function getConfObj()
     {
-        return $this->configObject;
-    }
-
-    /**
-     * 验证连接类型
-     * @param $connType
-     * @return void
-     * @throws ConnException
-     */
-    private function verifyConnType($connType)
-    {
-        if (!in_array($connType,[ConnEnum::ALICLOUD,ConnEnum::LOCAL,ConnEnum::YBRCLOUD])){
-            throw new ConnException("Unknow Connection Type.");
-        }
-    }
-
-    /**
-     * 验证类型数据是否正确
-     * @param Conf $f
-     * @throws ConnException
-     */
-    private function switchVerify(Conf $f){
-        // redis ali配置
-        if (strtoupper($f->getConnType()) == ConnEnum::ALICLOUD){
-            if (!$f->getAliHost()){
-                throw new ConnException("Select one Connection type which ALICLOUD . aliHost field is require.");
-            }
-            if (!strstr($f->getAliHost(),":")){
-                throw new ConnException("Please set ALI redis port");
-            }
-        }
-        // redis 本地配置
-        if (strtoupper($f->getConnType()) == ConnEnum::LOCAL){
-            if (!$f->getLocalHost()){
-                throw new ConnException("Select one Connection type which LOCAL. localHost field is require.");
-            }
-            if (!strstr($f->getLocalHost(),":")){
-                throw new ConnException("Please set Local redis port");
-            }
-        }
+        return isset($this->configObject[$this->getConnType()]) ? $this->configObject[$this->getConnType()] : null;
     }
 }
