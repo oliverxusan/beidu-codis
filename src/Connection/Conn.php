@@ -31,7 +31,7 @@ class Conn implements ConnInterface
         }
         foreach ($connObj::toArray() as $key=>$value){
             $config = \think\Config::iniGet(strtolower($value).'Connect');
-            !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($key));
+            !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
         }
         $this->connType = $connObj->getValue();
     }
@@ -59,16 +59,16 @@ class Conn implements ConnInterface
     /**
      * 初始化配置文件
      * @param array $conf
-     * @param string $connType
+     * @param object $connType
      * @return object
      * @throws ConnException
      */
-    public function initConfigure($conf, $connType = 'CODIS')
+    public function initConfigure($conf, $connType)
     {
         if (empty($conf)){
             throw new ConnException("config set is nil");
         }
-        if ($connType == 'CODIS'){
+        if ($connType == strtoupper((string)ConnEnum::YBRCLOUD())){
             $f = new CodisConf();
             $f->setPassword($conf['password']);
             $f->setPrefix($conf['prefix']);
@@ -107,7 +107,7 @@ class Conn implements ConnInterface
         //获取当前设置连接源
         if (isset($this->configObject[$this->getConnType()])){
             $config = $this->configObject[$this->getConnType()];
-            if ($this->getConnType() == 'CODIS'){
+            if ($this->getConnType() == strtoupper((string)ConnEnum::YBRCLOUD())){
                 $sock = $this->initCodis($config);
             }else{
                 $sock = $this->initRedis($config);

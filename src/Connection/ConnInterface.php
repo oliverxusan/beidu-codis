@@ -30,9 +30,10 @@ interface ConnInterface
     /**
      * 初始化配置文件
      * @param array $conf
+     * @param object $connType
      * @return mixed
      */
-    public function initConfigure($conf);
+    public function initConfigure($conf, $connType);
 
     /**
      * 获取config对象
