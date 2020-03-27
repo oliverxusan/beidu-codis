@@ -31,9 +31,9 @@ class Conn implements ConnInterface
         }
         foreach ($connObj::toArray() as $key=>$value){
             $config = \think\Config::iniGet(strtolower($value).'Connect');
-            !empty($config) && $this->configObject[strtoupper($key)] = $this->initConfigure($config,strtoupper($key));
+            !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($key));
         }
-        $this->connType = $connObj->getKey();
+        $this->connType = $connObj->getValue();
     }
 
     /**
@@ -68,7 +68,7 @@ class Conn implements ConnInterface
         if (empty($conf)){
             throw new ConnException("config set is nil");
         }
-        if ($connType == 'YBRCLOUD'){
+        if ($connType == 'CODIS'){
             $f = new CodisConf();
             $f->setPassword($conf['password']);
             $f->setPrefix($conf['prefix']);
@@ -107,7 +107,7 @@ class Conn implements ConnInterface
         //获取当前设置连接源
         if (isset($this->configObject[$this->getConnType()])){
             $config = $this->configObject[$this->getConnType()];
-            if ($this->getConnType() == 'YBRCLOUD'){
+            if ($this->getConnType() == 'CODIS'){
                 $sock = $this->initCodis($config);
             }else{
                 $sock = $this->initRedis($config);
