@@ -18,7 +18,8 @@ codisConnect.select = 0
 codisConnect.timeout = 3
 codisConnect.expire = 3600
 codisConnect.prefix = ''
-codisConnect.connType = 'CODIS' //分别有 CODIS ALICLOUD LOCAL
+codisConnect.connType = 'CODIS' //根据连接枚举类来获取不同数据源 名称 不设置默认是CODIS 
+codisConnect.connEnumClass = '\Ybren\Codis\SockEnum' //设置连接枚举类 如果设置了就可以设置不同的connType 值 不设置默认是\Ybren\Codis\Enum\ConnEnum
 
 可以N个连接配置 根据你继承ConnEnum 枚举类
 默认3种数据配置源

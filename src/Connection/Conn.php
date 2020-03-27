@@ -7,8 +7,6 @@ namespace Ybren\Codis\Connection;
 use Ybren\Codis\Config\CodisConf;
 use Ybren\Codis\Config\RedisConf;
 use Ybren\Codis\Enum\ConnEnum;
-use Ybren\Codis\Exception\CodisException as CodisExceptionAlias;
-use Ybren\Codis\Exception\CodisException;
 use Ybren\Codis\Exception\ConnException;
 use Ybren\Codis\Zookeeper\RedisFromZk;
 
@@ -24,16 +22,31 @@ class Conn implements ConnInterface
 
     private $configObject = [];
 
-    public function __construct(ConnEnum $connObj)
+    public function __construct($connObj)
     {
         if(!class_exists("\\think\\Config")){
-            throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
+            throw new ConnException("ERR So Far. Only Adapter one for Thinkphp when get config file.");
         }
-        foreach ($connObj::toArray() as $key=>$value){
-            $config = \think\Config::iniGet(strtolower($value).'Connect');
-            !empty($config) && $this->configObject[strtoupper($key)] = $this->initConfigure($config,strtoupper($key));
+
+        if (is_null($connObj)){
+            $config = \think\Config::iniGet(strtolower(ConnEnum::YBRCLOUD()->getValue()).'Connect');
+            $initObj = $this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())] = $this->initConfigure($config,strtoupper(ConnEnum::YBRCLOUD()->getValue()));
+            //获取初始化枚举类
+            $enumClass = $initObj->getConnEnumClass();
+            foreach ($enumClass::toArray() as $key=>$value){
+                if (!isset($this->configObject[strtoupper($value)])){
+                    $config = \think\Config::iniGet(strtolower($value).'Connect');
+                    !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+                }
+            }
+            $this->connType = empty($initObj->getConnType()) ? strtoupper(ConnEnum::YBRCLOUD()->getValue()) : strtoupper($initObj->getConnType());
+        }else{
+            foreach ($connObj::toArray() as $key=>$value){
+                $config = \think\Config::iniGet(strtolower($value).'Connect');
+                !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+            }
+            $this->connType = strtoupper($connObj->getValue());
         }
-        $this->connType = $connObj->getKey();
     }
 
     /**
@@ -63,12 +76,9 @@ class Conn implements ConnInterface
      * @return object
      * @throws ConnException
      */
-    public function initConfigure($conf, $connType = 'YBRCLOUD')
+    public function initConfigure($conf, $connType)
     {
-        if (empty($conf)){
-            throw new ConnException("config set is nil");
-        }
-        if ($connType == 'YBRCLOUD'){
+        if ($connType == strtoupper((string)ConnEnum::YBRCLOUD())){
             $f = new CodisConf();
             $f->setPassword($conf['password']);
             $f->setPrefix($conf['prefix']);
@@ -78,6 +88,13 @@ class Conn implements ConnInterface
             if (!isset($conf['zkHost']) || empty($conf['zkHost'])){
                 throw new ConnException("Select Codis Connection type. zkHost field is require.");
             }
+            $f->setConnType($conf['connType']);
+            if (!empty($conf['connEnumClass']) && class_exists($conf['connEnumClass'])){
+                $f->setConnEnumClass($conf['connEnumClass']);
+            }else{
+                $f->setConnEnumClass("\Ybren\Codis\Enum\ConnEnum");
+            }
+
             $f->setZkHost($conf['zkHost']);
             $f->setZkPassword($conf['zkPassword']);
             !$conf['retryTime'] ? $f->setRetryTime(3) : $f->setRetryTime($conf['retryTime']);
@@ -99,7 +116,6 @@ class Conn implements ConnInterface
      * 通过分配的连接方式获取句柄
      * @return mixed
      * @throws ConnException
-     * @throws CodisExceptionAlias
      */
     public function getAssignSock()
     {
@@ -107,25 +123,41 @@ class Conn implements ConnInterface
         //获取当前设置连接源
         if (isset($this->configObject[$this->getConnType()])){
             $config = $this->configObject[$this->getConnType()];
-            if ($this->getConnType() == 'YBRCLOUD'){
+            if ($this->getConnType() == strtoupper((string)ConnEnum::YBRCLOUD())){
                 $sock = $this->initCodis($config);
             }else{
                 $sock = $this->initRedis($config);
             }
+            //当连接故障 且超过1个数据源就进行切换
+            if (!$sock && count($this->configObject) > 1){
+                $freeConnPool = $this->configObject;
+                unset($freeConnPool[$this->getConnType()]);
+                foreach ($freeConnPool as $k=>$v){
+                    if ($k == strtoupper((string)ConnEnum::YBRCLOUD())){
+                        $sock = $this->initCodis($config);
+                    }else{
+                        $sock = $this->initRedis($config);
+                    }
+                    //连接失败就跳转到下一个
+                    if (!$sock){
+                        unset($freeConnPool[$k]);
+                        continue;
+                    }
+                }
+            }
         }else{
-            throw new ConnException( "Constant " . $this->getConnType() . " in Enum Class, Config Information is blank.");
+            throw new ConnException( "ERR Constant " . $this->getConnType() . " in Enum Class, Config Information is blank.");
         }
         if ($sock){
             return $sock;
         }
-        throw new ConnException("Connection is wrong!!");
+        throw new ConnException("ERR Connection is wrong!!");
     }
 
     /**
      * 初始化codis
      * @param CodisConf $conf
      * @return \Redis
-     * @throws CodisExceptionAlias
      */
     public function initCodis(CodisConf $conf)
     {

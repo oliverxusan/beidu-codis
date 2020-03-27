@@ -18,7 +18,7 @@ namespace Ybren\Codis\Config;
  * Class Conf
  * @package Ybren\Codis\Config
  */
-class Conf
+class CodisConf
 {
     /**
      * zookeeper ip:端号 地址 多个用逗号隔开
@@ -100,6 +100,27 @@ class Conf
      */
     private $prefix;
 
+    /**
+     * 连接枚举类
+     * @var
+     */
+    private $connEnumClass;
+
+    /**
+     * @return mixed
+     */
+    public function getConnEnumClass()
+    {
+        return $this->connEnumClass;
+    }
+
+    /**
+     * @param mixed $connEnumClass
+     */
+    public function setConnEnumClass($connEnumClass)
+    {
+        $this->connEnumClass = $connEnumClass;
+    }
     /**
      * @return mixed
      */

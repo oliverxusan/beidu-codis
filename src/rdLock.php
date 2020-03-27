@@ -32,7 +32,16 @@ class rdLock implements LockInterface
     {
         if (empty($this->_instance)){
             //默认读tp中yaconf配置文件
-            $this->_instance = Codis::handler();
+            if (class_exists("\Ybren\Codis\Cache")){
+                $sock = \Ybren\Codis\Cache::handler();
+                if (!$sock){
+                    $sock = Codis::handler();
+                }
+            }else{
+                $sock = Codis::handler();
+            }
+
+            $this->_instance = $sock;
         }
     }
 
