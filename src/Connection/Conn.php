@@ -39,9 +39,6 @@ class Conn implements ConnInterface
             $initObj = $this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())] = $this->initConfigure($config,strtoupper(ConnEnum::YBRCLOUD()->getValue()));
             //获取初始化枚举类
             $enumClass = $initObj->getConnEnumClass();
-            if (!class_exists($enumClass)){
-                throw new ConnException("ERR ". $enumClass . " NOT FOUND!");
-            }
             foreach ($enumClass::toArray() as $key=>$value){
                 if (!isset($this->configObject[strtoupper($value)])){
                     $config = \think\Config::iniGet(strtolower($value).'Connect');
