@@ -128,6 +128,23 @@ class Conn implements ConnInterface
             }else{
                 $sock = $this->initRedis($config);
             }
+            //当连接故障 且超过1个数据源就进行切换
+            if (!$sock && count($this->configObject) > 1){
+                $freeConnPool = $this->configObject;
+                unset($freeConnPool[$this->getConnType()]);
+                foreach ($freeConnPool as $k=>$v){
+                    if ($k == strtoupper((string)ConnEnum::YBRCLOUD())){
+                        $sock = $this->initCodis($config);
+                    }else{
+                        $sock = $this->initRedis($config);
+                    }
+                    //连接失败就跳转到下一个
+                    if (!$sock){
+                        unset($freeConnPool[$k]);
+                        continue;
+                    }
+                }
+            }
         }else{
             throw new ConnException( "ERR Constant " . $this->getConnType() . " in Enum Class, Config Information is blank.");
         }
