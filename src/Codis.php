@@ -58,7 +58,7 @@ class Codis
     {
     }
 
-    private static function init(){
+    private static function connect(){
 
         if (isset(static::$_instance[static::$_connType])){
             return static::$_instance[static::$_connType];
@@ -71,7 +71,7 @@ class Codis
 
     // 调用静态方法
     public static function __callStatic($method, $params){
-        return call_user_func_array(array(static::init(), $method), $params);
+        return call_user_func_array(array(static::connect(), $method), $params);
     }
 
     /**
@@ -81,7 +81,7 @@ class Codis
     public static function getInstance()
     {
         if (!isset(static::$_instance[static::$_connType])){
-            return static::init();
+            return static::connect();
         }
         return static::$_instance[static::$_connType];
     }
@@ -90,7 +90,7 @@ class Codis
      * 切换数据源
      * @param ConnEnum $enumObj 枚举对象值
      */
-    public static function switchConnType(ConnEnum $enumObj){
+    public static function init(ConnEnum $enumObj){
         static::$_connObj = $enumObj;
     }
 }
