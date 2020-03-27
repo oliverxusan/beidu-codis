@@ -59,7 +59,7 @@ class Conn implements ConnInterface
     /**
      * 初始化配置文件
      * @param array $conf
-     * @param object $connType
+     * @param string $connType
      * @return object
      * @throws ConnException
      */
