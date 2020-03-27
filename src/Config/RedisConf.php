@@ -28,6 +28,23 @@ class RedisConf
 
     private $prefix;
 
+    private $failOverFlag;
+
+    /**
+     * @return mixed
+     */
+    public function getFailOverFlag()
+    {
+        return $this->failOverFlag;
+    }
+
+    /**
+     * @param mixed $failOverFlag
+     */
+    public function setFailOverFlag($failOverFlag)
+    {
+        $this->failOverFlag = $failOverFlag;
+    }
     /**
      * @param mixed $timeout
      */
