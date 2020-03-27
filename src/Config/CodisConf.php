@@ -107,6 +107,27 @@ class CodisConf
     private $connEnumClass;
 
     /**
+     * 是否启用故障转移
+     * @var
+     */
+    private $failOverEnable;
+
+    /**
+     * @return mixed
+     */
+    public function getFailOverEnable()
+    {
+        return $this->failOverEnable;
+    }
+
+    /**
+     * @param mixed $failOverEnable
+     */
+    public function setFailOverEnable($failOverEnable)
+    {
+        $this->failOverEnable = $failOverEnable;
+    }
+    /**
      * @return mixed
      */
     public function getConnEnumClass()

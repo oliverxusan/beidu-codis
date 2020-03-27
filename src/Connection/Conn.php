@@ -20,6 +20,12 @@ class Conn implements ConnInterface
 
     private $connType = null;
 
+    /**
+     * 故障转移
+     * @var bool
+     */
+    private $failOver = 1;// 是否启用 1启用 0禁用
+
     private $configObject = [];
 
     public function __construct($connObj)
@@ -33,17 +39,25 @@ class Conn implements ConnInterface
             $initObj = $this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())] = $this->initConfigure($config,strtoupper(ConnEnum::YBRCLOUD()->getValue()));
             //获取初始化枚举类
             $enumClass = $initObj->getConnEnumClass();
+            if (!class_exists($enumClass)){
+                throw new ConnException("ERR ". $enumClass . " NOT FOUND!");
+            }
             foreach ($enumClass::toArray() as $key=>$value){
                 if (!isset($this->configObject[strtoupper($value)])){
                     $config = \think\Config::iniGet(strtolower($value).'Connect');
                     !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
                 }
             }
+            $this->failOver = $initObj->getFailOverEnable();
             $this->connType = empty($initObj->getConnType()) ? strtoupper(ConnEnum::YBRCLOUD()->getValue()) : strtoupper($initObj->getConnType());
         }else{
             foreach ($connObj::toArray() as $key=>$value){
                 $config = \think\Config::iniGet(strtolower($value).'Connect');
                 !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+            }
+            $initObj = isset($this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())]) ? $this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())] : null;
+            if ($initObj){
+                $this->failOver = $initObj->getFailOverEnable();
             }
             $this->connType = strtoupper($connObj->getValue());
         }
@@ -99,6 +113,7 @@ class Conn implements ConnInterface
             $f->setZkPassword($conf['zkPassword']);
             !$conf['retryTime'] ? $f->setRetryTime(3) : $f->setRetryTime($conf['retryTime']);
             $f->setZkName($conf['zkName']);
+            $f->setFailOverEnable($conf['failOverEnable']);
             return $f;
         }else{
             $f = new RedisConf();
@@ -108,6 +123,7 @@ class Conn implements ConnInterface
             !$conf['select'] ? $f->setSelect(0) : $f->setSelect($conf['select']);
             !$conf['expire'] ? $f->setExpire(86400) : $f->setExpire($conf['expire']);
             !$conf['timeout'] ? $f->setTimeout(3) : $f->setTimeout($conf['timeout']);
+            $f->setFailOverFlag($conf['failOverFlag']);
             return $f;
         }
     }
@@ -129,14 +145,17 @@ class Conn implements ConnInterface
                 $sock = $this->initRedis($config);
             }
             //当连接故障 且超过1个数据源就进行切换
-            if (!$sock && count($this->configObject) > 1){
+            if (((int) $this->failOver == 1) && !$sock && count($this->configObject) > 1){
                 $freeConnPool = $this->configObject;
                 unset($freeConnPool[$this->getConnType()]);
                 foreach ($freeConnPool as $k=>$v){
                     if ($k == strtoupper((string)ConnEnum::YBRCLOUD())){
-                        $sock = $this->initCodis($config);
+                        $sock = $this->initCodis($v);
                     }else{
-                        $sock = $this->initRedis($config);
+                        if ((int)$v->getFailOverFlag() == 0){
+                            continue;
+                        }
+                        $sock = $this->initRedis($v);
                     }
                     //连接失败就跳转到下一个
                     if (!$sock){
