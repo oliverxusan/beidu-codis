@@ -18,6 +18,7 @@ codisConnect.select = 0
 codisConnect.timeout = 3
 codisConnect.expire = 3600
 codisConnect.prefix = ''
+codisConnect.failOverEnable = 1 //故障转移 1开启 0禁用
 codisConnect.connType = 'CODIS' //根据连接枚举类来获取不同数据源 名称 不设置默认是CODIS 
 codisConnect.connEnumClass = '\Ybren\Codis\SockEnum' //设置连接枚举类 如果设置了就可以设置不同的connType 值 不设置默认是\Ybren\Codis\Enum\ConnEnum
 
@@ -29,6 +30,7 @@ alicloudConnect.select = 0
 alicloudConnect.timeout = 3
 alicloudConnect.expire = 3600
 alicloudConnect.prefix = ''
+alicloudConnect.failOverFlag = 0 //故障转移标志 0禁用 1开启
 
 localConnect.host = '127.0.0.1:6379'
 localConnect.password = 'redis密码'
@@ -36,6 +38,7 @@ localConnect.select = 0
 localConnect.timeout = 3
 localConnect.expire = 3600
 localConnect.prefix = ''
+localConnect.failOverFlag = 1 //故障转移标志 0禁用 1开启
 
 比如我想增加 SockEnum枚举类
 class SockEnum extends ConnEnum{
