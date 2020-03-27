@@ -7,8 +7,6 @@ namespace Ybren\Codis\Connection;
 use Ybren\Codis\Config\CodisConf;
 use Ybren\Codis\Config\RedisConf;
 use Ybren\Codis\Enum\ConnEnum;
-use Ybren\Codis\Exception\CodisException as CodisExceptionAlias;
-use Ybren\Codis\Exception\CodisException;
 use Ybren\Codis\Exception\ConnException;
 use Ybren\Codis\Zookeeper\RedisFromZk;
 
@@ -24,16 +22,30 @@ class Conn implements ConnInterface
 
     private $configObject = [];
 
-    public function __construct(ConnEnum $connObj)
+    public function __construct($connObj)
     {
         if(!class_exists("\\think\\Config")){
-            throw new CodisException("So Far. Only Adapter one for Thinkphp when get config file.");
+            throw new ConnException("ERR So Far. Only Adapter one for Thinkphp when get config file.");
         }
-        foreach ($connObj::toArray() as $key=>$value){
-            $config = \think\Config::iniGet(strtolower($value).'Connect');
-            !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+
+        if (is_null($connObj)){
+            foreach (ConnEnum::toArray() as $key=>$value){
+                $config = \think\Config::iniGet(strtolower($value).'Connect');
+                !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+            }
+            $codisConfig = isset($this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())]) ? $this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())] : null;
+            if ($codisConfig){
+                $this->connType = empty($codisConfig->getConnType()) ? strtoupper(ConnEnum::YBRCLOUD()->getValue()) : strtoupper($codisConfig->getConnType());
+            }else{
+                $this->connType = strtoupper(ConnEnum::YBRCLOUD()->getValue());
+            }
+        }else{
+            foreach ($connObj::toArray() as $key=>$value){
+                $config = \think\Config::iniGet(strtolower($value).'Connect');
+                !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+            }
+            $this->connType = $connObj->getValue();
         }
-        $this->connType = $connObj->getValue();
     }
 
     /**
@@ -65,9 +77,6 @@ class Conn implements ConnInterface
      */
     public function initConfigure($conf, $connType)
     {
-        if (empty($conf)){
-            throw new ConnException("config set is nil");
-        }
         if ($connType == strtoupper((string)ConnEnum::YBRCLOUD())){
             $f = new CodisConf();
             $f->setPassword($conf['password']);
@@ -78,6 +87,7 @@ class Conn implements ConnInterface
             if (!isset($conf['zkHost']) || empty($conf['zkHost'])){
                 throw new ConnException("Select Codis Connection type. zkHost field is require.");
             }
+            $f->setConnType($conf['connType']);
             $f->setZkHost($conf['zkHost']);
             $f->setZkPassword($conf['zkPassword']);
             !$conf['retryTime'] ? $f->setRetryTime(3) : $f->setRetryTime($conf['retryTime']);
@@ -99,7 +109,6 @@ class Conn implements ConnInterface
      * 通过分配的连接方式获取句柄
      * @return mixed
      * @throws ConnException
-     * @throws CodisExceptionAlias
      */
     public function getAssignSock()
     {
@@ -113,19 +122,18 @@ class Conn implements ConnInterface
                 $sock = $this->initRedis($config);
             }
         }else{
-            throw new ConnException( "Constant " . $this->getConnType() . " in Enum Class, Config Information is blank.");
+            throw new ConnException( "ERR Constant " . $this->getConnType() . " in Enum Class, Config Information is blank.");
         }
         if ($sock){
             return $sock;
         }
-        throw new ConnException("Connection is wrong!!");
+        throw new ConnException("ERR Connection is wrong!!");
     }
 
     /**
      * 初始化codis
      * @param CodisConf $conf
      * @return \Redis
-     * @throws CodisExceptionAlias
      */
     public function initCodis(CodisConf $conf)
     {

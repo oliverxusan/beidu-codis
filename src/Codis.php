@@ -38,6 +38,16 @@ class Codis
     //cmd实例
     private static $_instance = null;
 
+    /**
+     * 连接对象
+     * @var null
+     */
+    private static $_connObj = null;
+
+    /**
+     * 连接类型
+     * @var null
+     */
     private static $_connType = null;
 
     /**
@@ -49,13 +59,13 @@ class Codis
     }
 
     private static function init(){
-        if (empty(static::$_connType)){
-            static::$_connType = ConnEnum::YBRCLOUD();
+
+        if (isset(static::$_instance[static::$_connType])){
+            return static::$_instance[static::$_connType];
         }
-        if (isset(static::$_instance[(string)static::$_connType])){
-            return static::$_instance[(string)static::$_connType];
-        }
-        return static::$_instance[(string)static::$_connType] = new Cmd(new Conn(static::$_connType));
+        $conn = new Conn(static::$_connObj);
+        static::$_connType = $conn->getConnType();
+        return static::$_instance[static::$_connType] = new Cmd($conn);
     }
 
 
@@ -70,21 +80,17 @@ class Codis
      */
     public static function getInstance()
     {
-        if (!isset(static::$_instance[(string)static::$_connType])){
+        if (!isset(static::$_instance[static::$_connType])){
             return static::init();
         }
-        return static::$_instance[(string)static::$_connType];
+        return static::$_instance[static::$_connType];
     }
 
     /**
      * 切换数据源
-     * @param $enumObj 枚举对象值
-     * @throws ConnException
+     * @param ConnEnum $enumObj 枚举对象值
      */
-    public static function switchConnType($enumObj){
-        if (!$enumObj instanceof ConnEnum){
-            throw new ConnException("It must is a instance which is ConnEnum class. Or given one which is extends of ConnEnum class instance ");
-        }
-        static::$_connType = $enumObj;
+    public static function switchConnType(ConnEnum $enumObj){
+        static::$_connObj = $enumObj;
     }
 }
