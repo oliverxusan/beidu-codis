@@ -101,6 +101,27 @@ class CodisConf
     private $prefix;
 
     /**
+     * 连接枚举类
+     * @var
+     */
+    private $connEnumClass;
+
+    /**
+     * @return mixed
+     */
+    public function getConnEnumClass()
+    {
+        return $this->connEnumClass;
+    }
+
+    /**
+     * @param mixed $connEnumClass
+     */
+    public function setConnEnumClass($connEnumClass)
+    {
+        $this->connEnumClass = $connEnumClass;
+    }
+    /**
      * @return mixed
      */
     public function getConnType()

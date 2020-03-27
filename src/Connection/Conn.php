@@ -29,22 +29,23 @@ class Conn implements ConnInterface
         }
 
         if (is_null($connObj)){
-            foreach (ConnEnum::toArray() as $key=>$value){
-                $config = \think\Config::iniGet(strtolower($value).'Connect');
-                !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+            $config = \think\Config::iniGet(strtolower(ConnEnum::YBRCLOUD()->getValue()).'Connect');
+            $initObj = $this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())] = $this->initConfigure($config,strtoupper(ConnEnum::YBRCLOUD()->getValue()));
+            //获取初始化枚举类
+            $enumClass = $initObj->getConnEnumClass();
+            foreach ($enumClass::toArray() as $key=>$value){
+                if (!isset($this->configObject[strtoupper($value)])){
+                    $config = \think\Config::iniGet(strtolower($value).'Connect');
+                    !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
+                }
             }
-            $codisConfig = isset($this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())]) ? $this->configObject[strtoupper(ConnEnum::YBRCLOUD()->getValue())] : null;
-            if ($codisConfig){
-                $this->connType = empty($codisConfig->getConnType()) ? strtoupper(ConnEnum::YBRCLOUD()->getValue()) : strtoupper($codisConfig->getConnType());
-            }else{
-                $this->connType = strtoupper(ConnEnum::YBRCLOUD()->getValue());
-            }
+            $this->connType = empty($initObj->getConnType()) ? strtoupper(ConnEnum::YBRCLOUD()->getValue()) : strtoupper($initObj->getConnType());
         }else{
             foreach ($connObj::toArray() as $key=>$value){
                 $config = \think\Config::iniGet(strtolower($value).'Connect');
                 !empty($config) && $this->configObject[strtoupper($value)] = $this->initConfigure($config,strtoupper($value));
             }
-            $this->connType = $connObj->getValue();
+            $this->connType = strtoupper($connObj->getValue());
         }
     }
 
@@ -88,6 +89,12 @@ class Conn implements ConnInterface
                 throw new ConnException("Select Codis Connection type. zkHost field is require.");
             }
             $f->setConnType($conf['connType']);
+            if (!empty($conf['connEnumClass']) && class_exists($conf['connEnumClass'])){
+                $f->setConnEnumClass($conf['connEnumClass']);
+            }else{
+                $f->setConnEnumClass("\Ybren\Codis\Enum\ConnEnum");
+            }
+
             $f->setZkHost($conf['zkHost']);
             $f->setZkPassword($conf['zkPassword']);
             !$conf['retryTime'] ? $f->setRetryTime(3) : $f->setRetryTime($conf['retryTime']);
