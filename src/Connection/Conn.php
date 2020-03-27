@@ -63,7 +63,7 @@ class Conn implements ConnInterface
      * @return object
      * @throws ConnException
      */
-    public function initConfigure($conf, $connType = 'YBRCLOUD')
+    public function initConfigure($conf, $connType = 'CODIS')
     {
         if (empty($conf)){
             throw new ConnException("config set is nil");
