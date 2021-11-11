@@ -24,7 +24,7 @@ class Conn implements ConnInterface
      * 故障转移
      * @var bool
      */
-    private $failOver = 1;// 是否启用 1启用 0禁用
+    private $failOver = 0;// 是否启用 1启用 0禁用
 
     private $configObject = [];
 
